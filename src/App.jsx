@@ -1,6 +1,62 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Filter, Edit2, Trash2, Eye, Calendar, DollarSign, FileText, Users, CheckCircle, Clock, AlertCircle } from 'lucide-react';
-import storage from './utils/storage';
+import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building } from 'lucide-react';
+
+// Storage adapter that works both in Claude and in browser
+const storage = {
+  async get(key) {
+    if (window.storage && window.storage.get) {
+      try {
+        return await window.storage.get(key);
+      } catch (e) {
+        // Fall through to localStorage
+      }
+    }
+    const value = localStorage.getItem(key);
+    return value ? { key, value, shared: false } : null;
+  },
+
+  async set(key, value) {
+    if (window.storage && window.storage.set) {
+      try {
+        return await window.storage.set(key, value);
+      } catch (e) {
+        // Fall through to localStorage
+      }
+    }
+    localStorage.setItem(key, value);
+    return { key, value, shared: false };
+  },
+
+  async delete(key) {
+    if (window.storage && window.storage.delete) {
+      try {
+        return await window.storage.delete(key);
+      } catch (e) {
+        // Fall through to localStorage
+      }
+    }
+    localStorage.removeItem(key);
+    return { key, deleted: true, shared: false };
+  },
+
+  async list(prefix = '') {
+    if (window.storage && window.storage.list) {
+      try {
+        return await window.storage.list(prefix);
+      } catch (e) {
+        // Fall through to localStorage
+      }
+    }
+    const keys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith(prefix)) {
+        keys.push(key);
+      }
+    }
+    return { keys, prefix, shared: false };
+  }
+};
 
 const TrainingManagementApp = () => {
   const [activeTab, setActiveTab] = useState('pipeline');
@@ -63,6 +119,7 @@ const TrainingManagementApp = () => {
   ];
 
   const trainingTypes = ['AI Fundamentals', 'Product Management', 'AI for PMs', 'Custom'];
+  const deliveryModes = ['Virtual', 'In-Person', 'Blended'];
 
   const openModal = (type, item = null) => {
     setModalType(type);
@@ -93,7 +150,8 @@ const TrainingManagementApp = () => {
     const matchesStage = selectedStage === 'all' || training.stage === selectedStage;
     const matchesSearch = !searchQuery || 
       training.clientName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      training.title?.toLowerCase().includes(searchQuery.toLowerCase());
+      training.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      training.contactName?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesStage && matchesSearch;
   });
 
@@ -122,7 +180,7 @@ const TrainingManagementApp = () => {
               className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
             >
               <Plus size={20} />
-              New Training
+              New Request
             </button>
           </div>
 
@@ -183,7 +241,7 @@ const TrainingManagementApp = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
-                  placeholder="Search trainings..."
+                  placeholder="Search by client, contact, or training..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -207,18 +265,19 @@ const TrainingManagementApp = () => {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Training</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stage</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Value</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scoping Call</th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200">
                   {filteredTrainings.length === 0 ? (
                     <tr>
-                      <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
-                        No trainings found. Click "New Training" to get started.
+                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                        No client requests found. Click "New Request" to get started.
                       </td>
                     </tr>
                   ) : (
@@ -228,11 +287,35 @@ const TrainingManagementApp = () => {
                         <tr key={training.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4">
                             <div className="font-medium text-gray-900">{training.clientName}</div>
-                            <div className="text-sm text-gray-500">{training.clientContact}</div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                              <Users size={12} />
+                              {training.attendees || 0} attendees
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="font-medium text-gray-900">{training.title}</div>
-                            <div className="text-sm text-gray-500">{training.type}</div>
+                            <div className="text-sm text-gray-500">{training.topicRequests}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900">{training.contactName}</div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1">
+                              <Mail size={12} />
+                              {training.contactEmail}
+                            </div>
+                            {training.contactPhone && (
+                              <div className="text-xs text-gray-500 flex items-center gap-1">
+                                <Phone size={12} />
+                                {training.contactPhone}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-1 text-sm text-gray-700">
+                              {training.deliveryMode === 'Virtual' && <Video size={14} />}
+                              {training.deliveryMode === 'In-Person' && <Building size={14} />}
+                              {training.deliveryMode === 'Blended' && <MapPin size={14} />}
+                              {training.deliveryMode}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white ${stage?.color}`}>
@@ -240,32 +323,32 @@ const TrainingManagementApp = () => {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-sm text-gray-600">
-                            {training.deliveryDate || 'TBD'}
-                          </td>
-                          <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                            ${training.value?.toLocaleString() || '0'}
+                            {training.scopingCallDate || 'Not scheduled'}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
                               <button
                                 onClick={() => openModal('view', training)}
                                 className="p-1 text-gray-600 hover:text-blue-600 transition"
+                                title="View details"
                               >
                                 <Eye size={18} />
                               </button>
                               <button
                                 onClick={() => openModal('edit', training)}
                                 className="p-1 text-gray-600 hover:text-blue-600 transition"
+                                title="Edit"
                               >
                                 <Edit2 size={18} />
                               </button>
                               <button
                                 onClick={() => {
-                                  if (window.confirm('Delete this training?')) {
+                                  if (window.confirm('Delete this training request?')) {
                                     deleteTraining(training.id);
                                   }
                                 }}
                                 className="p-1 text-gray-600 hover:text-red-600 transition"
+                                title="Delete"
                               >
                                 <Trash2 size={18} />
                               </button>
@@ -304,7 +387,7 @@ const TrainingManagementApp = () => {
               
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">Active Trainings</h3>
+                  <h3 className="font-medium text-gray-900">Active Requests</h3>
                   <Users className="text-blue-600" size={24} />
                 </div>
                 <div className="text-3xl font-bold text-gray-900">
@@ -333,6 +416,7 @@ const TrainingManagementApp = () => {
           training={selectedItem}
           stages={stages}
           trainingTypes={trainingTypes}
+          deliveryModes={deliveryModes}
           onClose={closeModal}
           onSubmit={handleSubmit}
         />
@@ -341,16 +425,20 @@ const TrainingManagementApp = () => {
   );
 };
 
-const TrainingModal = ({ type, training, stages, trainingTypes, onClose, onSubmit }) => {
+const TrainingModal = ({ type, training, stages, trainingTypes, deliveryModes, onClose, onSubmit }) => {
   const [formData, setFormData] = useState(training || {
     clientName: '',
-    clientContact: '',
+    contactName: '',
+    contactEmail: '',
+    contactPhone: '',
     title: '',
-    type: '',
+    topicRequests: '',
+    attendees: '',
+    deliveryMode: '',
+    scopingCallDate: '',
     stage: 'intake',
     value: '',
     deliveryDate: '',
-    participants: '',
     description: '',
     notes: ''
   });
@@ -364,7 +452,7 @@ const TrainingModal = ({ type, training, stages, trainingTypes, onClose, onSubmi
     onSubmit({
       ...formData,
       value: parseFloat(formData.value) || 0,
-      participants: parseInt(formData.participants) || 0
+      attendees: parseInt(formData.attendees) || 0
     });
   };
 
@@ -372,131 +460,241 @@ const TrainingModal = ({ type, training, stages, trainingTypes, onClose, onSubmi
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
           <h2 className="text-xl font-bold text-gray-900">
-            {type === 'new' ? 'New Training' : type === 'edit' ? 'Edit Training' : 'Training Details'}
+            {type === 'new' ? 'New Client Request' : type === 'edit' ? 'Edit Request' : 'Request Details'}
           </h2>
+          <p className="text-sm text-gray-500 mt-1">
+            {type === 'new' && 'Create a record of a client\'s training request'}
+          </p>
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Client Name *
-              </label>
-              <input
-                type="text"
-                name="clientName"
-                value={formData.clientName}
-                onChange={handleChange}
-                disabled={isViewMode}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contact Email
-              </label>
-              <input
-                type="email"
-                name="clientContact"
-                value={formData.clientContact}
-                onChange={handleChange}
-                disabled={isViewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              />
-            </div>
-          </div>
-
+          {/* Client Information Section */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Training Title *
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              disabled={isViewMode}
-              required
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Training Type *
-              </label>
-              <select
-                name="type"
-                value={formData.type}
-                onChange={handleChange}
-                disabled={isViewMode}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              >
-                <option value="">Select type...</option>
-                {trainingTypes.map(t => (
-                  <option key={t} value={t}>{t}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Stage *
-              </label>
-              <select
-                name="stage"
-                value={formData.stage}
-                onChange={handleChange}
-                disabled={isViewMode}
-                required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              >
-                {stages.map(s => (
-                  <option key={s.id} value={s.id}>{s.label}</option>
-                ))}
-              </select>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Client Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Name *
+                </label>
+                <input
+                  type="text"
+                  name="clientName"
+                  value={formData.clientName}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  required
+                  placeholder="Enter organization or company name"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Value ($)
-              </label>
-              <input
-                type="number"
-                name="value"
-                value={formData.value}
-                onChange={handleChange}
-                disabled={isViewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              />
+          {/* Point of Contact Section */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Point of Contact</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Contact Name *
+                </label>
+                <input
+                  type="text"
+                  name="contactName"
+                  value={formData.contactName}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  required
+                  placeholder="Full name of primary contact"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  name="contactEmail"
+                  value={formData.contactEmail}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  required
+                  placeholder="contact@company.com"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="contactPhone"
+                  value={formData.contactPhone}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  placeholder="(555) 123-4567"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Training Request Details */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Training Request Details</h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Training Title *
+                </label>
+                <input
+                  type="text"
+                  name="title"
+                  value={formData.title}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  required
+                  placeholder="e.g., AI Fundamentals for Product Teams"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Initial Topic Requests *
+                </label>
+                <textarea
+                  name="topicRequests"
+                  value={formData.topicRequests}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  required
+                  rows="3"
+                  placeholder="List the topics the client has requested (e.g., Machine Learning basics, AI ethics, Product strategy with AI)"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Attendees *
+                  </label>
+                  <input
+                    type="number"
+                    name="attendees"
+                    value={formData.attendees}
+                    onChange={handleChange}
+                    disabled={isViewMode}
+                    required
+                    min="1"
+                    placeholder="Expected participants"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Delivery Mode *
+                  </label>
+                  <select
+                    name="deliveryMode"
+                    value={formData.deliveryMode}
+                    onChange={handleChange}
+                    disabled={isViewMode}
+                    required
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                  >
+                    <option value="">Select mode...</option>
+                    {deliveryModes.map(mode => (
+                      <option key={mode} value={mode}>{mode}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Initial Scoping Call Date *
+                </label>
+                <input
+                  type="date"
+                  name="scopingCallDate"
+                  value={formData.scopingCallDate}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Information (Optional) */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Additional Information (Optional)</h3>
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Training Type
+                </label>
+                <select
+                  name="type"
+                  value={formData.type}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                >
+                  <option value="">Select type...</option>
+                  {trainingTypes.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Stage
+                </label>
+                <select
+                  name="stage"
+                  value={formData.stage}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                >
+                  {stages.map(s => (
+                    <option key={s.id} value={s.id}>{s.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Estimated Value ($)
+                </label>
+                <input
+                  type="number"
+                  name="value"
+                  value={formData.value}
+                  onChange={handleChange}
+                  disabled={isViewMode}
+                  placeholder="0"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                />
+              </div>
             </div>
 
-            <div>
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Participants
-              </label>
-              <input
-                type="number"
-                name="participants"
-                value={formData.participants}
-                onChange={handleChange}
-                disabled={isViewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Delivery Date
+                Target Delivery Date
               </label>
               <input
                 type="date"
@@ -507,34 +705,36 @@ const TrainingModal = ({ type, training, stages, trainingTypes, onClose, onSubmi
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              disabled={isViewMode}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-            />
-          </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                disabled={isViewMode}
+                rows="2"
+                placeholder="Additional context about the training request"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes
-            </label>
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              disabled={isViewMode}
-              rows="3"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-            />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Internal Notes
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                disabled={isViewMode}
+                rows="2"
+                placeholder="Private notes for internal use"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+              />
+            </div>
           </div>
 
           <div className="flex gap-3 pt-4 border-t border-gray-200">
@@ -549,7 +749,7 @@ const TrainingModal = ({ type, training, stages, trainingTypes, onClose, onSubmi
                 onClick={handleSubmitClick}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                {type === 'new' ? 'Create Training' : 'Save Changes'}
+                {type === 'new' ? 'Create Request' : 'Save Changes'}
               </button>
             )}
           </div>
