@@ -2,11 +2,6 @@
 
 A comprehensive system for managing AI and Product Management training pipelines from initial client intake through delivery, evaluation, and invoicing.
 
-![App Screenshot - Light Mode](./screenshots/light-mode-dashboard.png)
-*Add screenshot of the main dashboard in light mode*
-
-![App Screenshot - Dark Mode](./screenshots/dark-mode-dashboard.png)
-*Add screenshot of the main dashboard in dark mode*
 
 ## 🎯 Project Overview
 
@@ -99,9 +94,6 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ![Dark Mode](./screenshots/dark-mode-full.png)
 *Add screenshot of the application in dark mode*
-
-![Theme Toggle](./screenshots/theme-toggle-button.png)
-*Add screenshot highlighting the theme toggle button*
 
 ---
 
