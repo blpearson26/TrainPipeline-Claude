@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon } from 'lucide-react';
 
 // Storage adapter that works both in Claude and in browser
 const storage = {
@@ -66,6 +66,34 @@ const TrainingManagementApp = () => {
   const [modalType, setModalType] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [trainings, setTrainings] = useState([]);
+  const [darkMode, setDarkMode] = useState(false);
+
+  // Load data and theme preference on mount
+  useEffect(() => {
+    loadData();
+    loadThemePreference();
+  }, []);
+
+  const loadThemePreference = async () => {
+    try {
+      const result = await storage.get('theme');
+      if (result && result.value === 'dark') {
+        setDarkMode(true);
+      }
+    } catch (error) {
+      console.log('No theme preference found');
+    }
+  };
+
+  const toggleTheme = async () => {
+    const newTheme = !darkMode;
+    setDarkMode(newTheme);
+    try {
+      await storage.set('theme', newTheme ? 'dark' : 'light');
+    } catch (error) {
+      console.error('Error saving theme preference:', error);
+    }
+  };
 
   // Load data on mount
   useEffect(() => {
@@ -142,6 +170,14 @@ const TrainingManagementApp = () => {
         updatedAt: new Date().toISOString()
       };
       await saveTraining(training);
+    } else if (modalType === 'scoping') {
+      const training = {
+        ...selectedItem,
+        scopingCall: formData,
+        scopingCallCompleted: true,
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
     }
     closeModal();
   };
@@ -165,33 +201,52 @@ const TrainingManagementApp = () => {
 
   const stats = getStageStats();
 
+  // Theme classes
+  const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
+  const cardBgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const hoverClass = darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${bgClass}`}>
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <header className={`${cardBgClass} border-b ${borderClass} sticky top-0 z-10`}>
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Training Management</h1>
-              <p className="text-sm text-gray-500 mt-1">AI & Product Management Training Pipeline</p>
+              <h1 className={`text-2xl font-bold ${textClass}`}>Training Management</h1>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>AI & Product Management Training Pipeline</p>
             </div>
-            <button
-              onClick={() => openModal('new')}
-              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-            >
-              <Plus size={20} />
-              New Request
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={toggleTheme}
+                className={`p-2 rounded-lg ${hoverClass} transition ${textClass}`}
+                title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              <button
+                onClick={() => openModal('new')}
+                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+              >
+                <Plus size={20} />
+                New Request
+              </button>
+            </div>
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex gap-4 mt-4 border-b border-gray-200">
+          <div className={`flex gap-4 mt-4 border-b ${borderClass}`}>
             <button
               onClick={() => setActiveTab('pipeline')}
               className={`px-4 py-2 font-medium transition ${
                 activeTab === 'pipeline'
                   ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : `${textSecondaryClass} hover:${textClass}`
               }`}
             >
               Pipeline
@@ -201,7 +256,7 @@ const TrainingManagementApp = () => {
               className={`px-4 py-2 font-medium transition ${
                 activeTab === 'calendar'
                   ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : `${textSecondaryClass} hover:${textClass}`
               }`}
             >
               Calendar
@@ -211,7 +266,7 @@ const TrainingManagementApp = () => {
               className={`px-4 py-2 font-medium transition ${
                 activeTab === 'analytics'
                   ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-900'
+                  : `${textSecondaryClass} hover:${textClass}`
               }`}
             >
               Analytics
@@ -227,10 +282,10 @@ const TrainingManagementApp = () => {
             {/* Stats Overview */}
             <div className="grid grid-cols-7 gap-4 mb-6">
               {stages.map(stage => (
-                <div key={stage.id} className="bg-white rounded-lg p-4 border border-gray-200">
+                <div key={stage.id} className={`${cardBgClass} rounded-lg p-4 border ${borderClass}`}>
                   <div className={`w-3 h-3 rounded-full ${stage.color} mb-2`}></div>
-                  <div className="text-2xl font-bold text-gray-900">{stats[stage.id] || 0}</div>
-                  <div className="text-xs text-gray-600 mt-1">{stage.label}</div>
+                  <div className={`text-2xl font-bold ${textClass}`}>{stats[stage.id] || 0}</div>
+                  <div className={`text-xs ${textSecondaryClass} mt-1`}>{stage.label}</div>
                 </div>
               ))}
             </div>
@@ -238,19 +293,19 @@ const TrainingManagementApp = () => {
             {/* Filters */}
             <div className="flex gap-4 mb-6">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${textSecondaryClass}`} size={20} />
                 <input
                   type="text"
                   placeholder="Search by client, contact, or training..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full pl-10 pr-4 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                 />
               </div>
               <select
                 value={selectedStage}
                 onChange={(e) => setSelectedStage(e.target.value)}
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`px-4 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
               >
                 <option value="all">All Stages</option>
                 {stages.map(stage => (
@@ -260,23 +315,23 @@ const TrainingManagementApp = () => {
             </div>
 
             {/* Training List */}
-            <div className="bg-white rounded-lg border border-gray-200">
+            <div className={`${cardBgClass} rounded-lg border ${borderClass}`}>
               <table className="w-full">
-                <thead className="bg-gray-50 border-b border-gray-200">
+                <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b ${borderClass}`}>
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Request</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Contact</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Mode</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Stage</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Scoping Call</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Client</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Request</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Contact</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Mode</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Stage</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Scoping</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className={`divide-y ${borderClass}`}>
                   {filteredTrainings.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="7" className={`px-6 py-12 text-center ${textSecondaryClass}`}>
                         No client requests found. Click "New Request" to get started.
                       </td>
                     </tr>
@@ -284,33 +339,27 @@ const TrainingManagementApp = () => {
                     filteredTrainings.map(training => {
                       const stage = stages.find(s => s.id === training.stage);
                       return (
-                        <tr key={training.id} className="hover:bg-gray-50">
+                        <tr key={training.id} className={hoverClass}>
                           <td className="px-6 py-4">
-                            <div className="font-medium text-gray-900">{training.clientName}</div>
-                            <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
+                            <div className={`font-medium ${textClass}`}>{training.clientName}</div>
+                            <div className={`text-xs ${textSecondaryClass} flex items-center gap-1 mt-1`}>
                               <Users size={12} />
                               {training.attendees || 0} attendees
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-medium text-gray-900">{training.title}</div>
-                            <div className="text-sm text-gray-500">{training.topicRequests}</div>
+                            <div className={`font-medium ${textClass}`}>{training.title}</div>
+                            <div className={`text-sm ${textSecondaryClass} line-clamp-1`}>{training.topicRequests}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900">{training.contactName}</div>
-                            <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <div className={`text-sm ${textClass}`}>{training.contactName}</div>
+                            <div className={`text-xs ${textSecondaryClass} flex items-center gap-1`}>
                               <Mail size={12} />
                               {training.contactEmail}
                             </div>
-                            {training.contactPhone && (
-                              <div className="text-xs text-gray-500 flex items-center gap-1">
-                                <Phone size={12} />
-                                {training.contactPhone}
-                              </div>
-                            )}
                           </td>
                           <td className="px-6 py-4">
-                            <div className="flex items-center gap-1 text-sm text-gray-700">
+                            <div className={`flex items-center gap-1 text-sm ${textClass}`}>
                               {training.deliveryMode === 'Virtual' && <Video size={14} />}
                               {training.deliveryMode === 'In-Person' && <Building size={14} />}
                               {training.deliveryMode === 'Blended' && <MapPin size={14} />}
@@ -322,21 +371,35 @@ const TrainingManagementApp = () => {
                               {stage?.label}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
-                            {training.scopingCallDate || 'Not scheduled'}
+                          <td className="px-6 py-4">
+                            {training.scopingCallCompleted ? (
+                              <span className="inline-flex items-center gap-1 text-green-600 text-sm">
+                                <CheckCircle size={16} />
+                                Completed
+                              </span>
+                            ) : (
+                              <span className={`${textSecondaryClass} text-sm`}>Not recorded</span>
+                            )}
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
                               <button
+                                onClick={() => openModal('scoping', training)}
+                                className={`p-1 ${textSecondaryClass} hover:text-green-600 transition`}
+                                title="Record scoping call"
+                              >
+                                <FileText size={18} />
+                              </button>
+                              <button
                                 onClick={() => openModal('view', training)}
-                                className="p-1 text-gray-600 hover:text-blue-600 transition"
+                                className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`}
                                 title="View details"
                               >
                                 <Eye size={18} />
                               </button>
                               <button
                                 onClick={() => openModal('edit', training)}
-                                className="p-1 text-gray-600 hover:text-blue-600 transition"
+                                className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`}
                                 title="Edit"
                               >
                                 <Edit2 size={18} />
@@ -347,7 +410,7 @@ const TrainingManagementApp = () => {
                                     deleteTraining(training.id);
                                   }
                                 }}
-                                className="p-1 text-gray-600 hover:text-red-600 transition"
+                                className={`p-1 ${textSecondaryClass} hover:text-red-600 transition`}
                                 title="Delete"
                               >
                                 <Trash2 size={18} />
@@ -365,42 +428,42 @@ const TrainingManagementApp = () => {
         )}
 
         {activeTab === 'calendar' && (
-          <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
-            <Calendar size={48} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Calendar View</h3>
-            <p className="text-gray-600">Calendar view with scheduled trainings coming soon</p>
+          <div className={`${cardBgClass} rounded-lg border ${borderClass} p-8 text-center`}>
+            <Calendar size={48} className={`mx-auto ${textSecondaryClass} mb-4`} />
+            <h3 className={`text-lg font-medium ${textClass} mb-2`}>Calendar View</h3>
+            <p className={textSecondaryClass}>Calendar view with scheduled trainings coming soon</p>
           </div>
         )}
 
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             <div className="grid grid-cols-3 gap-6">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">Total Pipeline Value</h3>
+                  <h3 className={`font-medium ${textClass}`}>Total Pipeline Value</h3>
                   <DollarSign className="text-green-600" size={24} />
                 </div>
-                <div className="text-3xl font-bold text-gray-900">
+                <div className={`text-3xl font-bold ${textClass}`}>
                   ${trainings.reduce((sum, t) => sum + (t.value || 0), 0).toLocaleString()}
                 </div>
               </div>
               
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">Active Requests</h3>
+                  <h3 className={`font-medium ${textClass}`}>Active Requests</h3>
                   <Users className="text-blue-600" size={24} />
                 </div>
-                <div className="text-3xl font-bold text-gray-900">
+                <div className={`text-3xl font-bold ${textClass}`}>
                   {trainings.filter(t => t.stage !== 'completed').length}
                 </div>
               </div>
               
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-medium text-gray-900">Completed</h3>
+                  <h3 className={`font-medium ${textClass}`}>Completed</h3>
                   <CheckCircle className="text-green-600" size={24} />
                 </div>
-                <div className="text-3xl font-bold text-gray-900">
+                <div className={`text-3xl font-bold ${textClass}`}>
                   {trainings.filter(t => t.stage === 'completed').length}
                 </div>
               </div>
@@ -411,16 +474,255 @@ const TrainingManagementApp = () => {
 
       {/* Modal */}
       {showModal && (
-        <TrainingModal
-          type={modalType}
-          training={selectedItem}
-          stages={stages}
-          trainingTypes={trainingTypes}
-          deliveryModes={deliveryModes}
-          onClose={closeModal}
-          onSubmit={handleSubmit}
-        />
+        modalType === 'scoping' ? (
+          <ScopingCallModal
+            training={selectedItem}
+            darkMode={darkMode}
+            onClose={closeModal}
+            onSubmit={handleSubmit}
+          />
+        ) : (
+          <TrainingModal
+            type={modalType}
+            training={selectedItem}
+            stages={stages}
+            trainingTypes={trainingTypes}
+            deliveryModes={deliveryModes}
+            darkMode={darkMode}
+            onClose={closeModal}
+            onSubmit={handleSubmit}
+          />
+        )
       )}
+    </div>
+  );
+};
+
+const ScopingCallModal = ({ training, darkMode, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState(training?.scopingCall || {
+    attendeeRoles: '',
+    trainingObjectives: '',
+    deliveryMode: training?.deliveryMode || '',
+    duration: '',
+    preferredTimeWindow: '',
+    numberOfParticipants: training?.attendees || '',
+    specialRequirements: '',
+    notes: '',
+    completedDate: new Date().toISOString().split('T')[0]
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmitClick = () => {
+    onSubmit(formData);
+  };
+
+  const deliveryModes = ['Virtual', 'On-site', 'Hybrid'];
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+          <div className="flex items-center gap-3">
+            <FileText className="text-green-600" size={24} />
+            <div>
+              <h2 className="text-xl font-bold text-gray-900">Record Scoping Call</h2>
+              <p className="text-sm text-gray-500 mt-1">
+                {training?.clientName} - {training?.title}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p className="text-sm text-blue-900">
+              <strong>Purpose:</strong> Record detailed requirements from the scoping call so course writers and trainers can reference sponsor requests throughout development and delivery.
+            </p>
+          </div>
+
+          {/* Participant Information */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Participant Information</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Attendee Roles *
+                </label>
+                <input
+                  type="text"
+                  name="attendeeRoles"
+                  value={formData.attendeeRoles}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., Executives, Managers, Analysts, Product Managers, Engineers"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                <p className="text-xs text-gray-500 mt-1">Specify the job roles or levels of participants</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Number of Participants (Estimated) *
+                </label>
+                <input
+                  type="number"
+                  name="numberOfParticipants"
+                  value={formData.numberOfParticipants}
+                  onChange={handleChange}
+                  required
+                  min="1"
+                  placeholder="Expected number of attendees"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Training Objectives */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Learning Outcomes</h3>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Training Objectives *
+              </label>
+              <textarea
+                name="trainingObjectives"
+                value={formData.trainingObjectives}
+                onChange={handleChange}
+                required
+                rows="5"
+                placeholder="At the end of the course, participants should be able to...&#10;&#10;• Understand key AI concepts and applications&#10;• Apply AI tools to product management workflows&#10;• Evaluate AI solutions for business problems&#10;• ..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+              />
+              <p className="text-xs text-gray-500 mt-1">List specific, measurable learning objectives</p>
+            </div>
+          </div>
+
+          {/* Logistics */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Delivery Logistics</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Delivery Mode *
+                </label>
+                <select
+                  name="deliveryMode"
+                  value={formData.deliveryMode}
+                  onChange={handleChange}
+                  required
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select mode...</option>
+                  {deliveryModes.map(mode => (
+                    <option key={mode} value={mode}>{mode}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Duration *
+                </label>
+                <input
+                  type="text"
+                  name="duration"
+                  value={formData.duration}
+                  onChange={handleChange}
+                  required
+                  placeholder="e.g., 2 days, 6 hours, 3 half-days"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Preferred Time Window for Delivery *
+              </label>
+              <input
+                type="text"
+                name="preferredTimeWindow"
+                value={formData.preferredTimeWindow}
+                onChange={handleChange}
+                required
+                placeholder="e.g., Q1 2025, March 15-20, Next month, Week of May 5th"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Special Requirements */}
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Additional Details</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Special Requirements / Constraints
+                </label>
+                <textarea
+                  name="specialRequirements"
+                  value={formData.specialRequirements}
+                  onChange={handleChange}
+                  rows="3"
+                  placeholder="e.g., Technical setup (specific software, tools), materials needed, language preferences, accessibility requirements, budget constraints"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Notes / Additional Context
+                </label>
+                <textarea
+                  name="notes"
+                  value={formData.notes}
+                  onChange={handleChange}
+                  rows="4"
+                  placeholder="Capture any qualitative details, client preferences, background information, or other important context from the scoping call..."
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Scoping Call Completed Date
+                </label>
+                <input
+                  type="date"
+                  name="completedDate"
+                  value={formData.completedDate}
+                  onChange={handleChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-4 border-t border-gray-200">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmitClick}
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              Save Scoping Call
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -468,6 +770,16 @@ const TrainingModal = ({ type, training, stages, trainingTypes, deliveryModes, o
           <p className="text-sm text-gray-500 mt-1">
             {type === 'new' && 'Create a record of a client\'s training request'}
           </p>
+          
+          {/* Show scoping call summary if completed */}
+          {isViewMode && training?.scopingCallCompleted && (
+            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2 text-green-800 font-medium text-sm">
+                <CheckCircle size={16} />
+                Scoping Call Completed
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="p-6 space-y-6">
@@ -636,6 +948,56 @@ const TrainingModal = ({ type, training, stages, trainingTypes, deliveryModes, o
               </div>
             </div>
           </div>
+
+          {/* Scoping Call Details (if completed) */}
+          {isViewMode && training?.scopingCallCompleted && training?.scopingCall && (
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
+                <FileText size={20} className="text-green-600" />
+                Scoping Call Results
+              </h3>
+              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                <div>
+                  <div className="text-xs font-medium text-gray-500 uppercase">Attendee Roles</div>
+                  <div className="text-sm text-gray-900 mt-1">{training.scopingCall.attendeeRoles}</div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-500 uppercase">Training Objectives</div>
+                  <div className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">{training.scopingCall.trainingObjectives}</div>
+                </div>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Delivery Mode</div>
+                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.deliveryMode}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Duration</div>
+                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.duration}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Participants</div>
+                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.numberOfParticipants}</div>
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs font-medium text-gray-500 uppercase">Preferred Time Window</div>
+                  <div className="text-sm text-gray-900 mt-1">{training.scopingCall.preferredTimeWindow}</div>
+                </div>
+                {training.scopingCall.specialRequirements && (
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Special Requirements</div>
+                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.specialRequirements}</div>
+                  </div>
+                )}
+                {training.scopingCall.notes && (
+                  <div>
+                    <div className="text-xs font-medium text-gray-500 uppercase">Notes</div>
+                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.notes}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Additional Information (Optional) */}
           <div>
