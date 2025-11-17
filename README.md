@@ -2,7 +2,6 @@
 
 A comprehensive system for managing AI and Product Management training pipelines from initial client intake through delivery, evaluation, and invoicing.
 
-
 ## 🎯 Project Overview
 
 This application was developed iteratively through conversation with Claude AI, with each feature built based on specific user stories and requirements. The app helps training managers track client requests, record scoping calls, manage the training development pipeline, and monitor progress through various stages.
@@ -39,8 +38,13 @@ This application was developed iteratively through conversation with Claude AI, 
 - Initial scoping call date picker
 - Form validation with required field indicators
 
+<details>
+<summary>📸 View Client Intake Form Screenshot</summary>
+
 ![Client Intake Form](./screenshots/client-intake-form.png)
 *Add screenshot of the New Client Request modal*
+
+</details>
 
 ---
 
@@ -73,11 +77,18 @@ This application was developed iteratively through conversation with Claude AI, 
 - Scoping call results displayed in training details view
 - Purpose statement to guide form completion
 
+<details>
+<summary>📸 View Scoping Call Screenshots</summary>
+
+### Scoping Call Form
 ![Scoping Call Form](./screenshots/scoping-call-form.png)
 *Add screenshot of the Record Scoping Call modal*
 
+### Scoping Status Indicator
 ![Scoping Status](./screenshots/scoping-status-indicator.png)
 *Add screenshot showing the scoping status in the table*
+
+</details>
 
 ---
 
@@ -92,8 +103,14 @@ This application was developed iteratively through conversation with Claude AI, 
 - Smooth color transitions between themes
 - Accessible color contrast in both modes
 
+<details>
+<summary>📸 View Theme Screenshots</summary>
+
+### Dark Mode
 ![Dark Mode](./screenshots/dark-mode-full.png)
 *Add screenshot of the application in dark mode*
+
+</details>
 
 ---
 
