@@ -1,58 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon, MessageSquare, Inbox, Paperclip, Upload, ExternalLink, File } from 'lucide-react';
 
-// Storage adapter that works both in Claude and in browser
+// Storage adapter
 const storage = {
   async get(key) {
-    if (window.storage && window.storage.get) {
+    if (window.storage?.get) {
       try {
         return await window.storage.get(key);
-      } catch (e) {
-        // Fall through to localStorage
-      }
+      } catch (e) {}
     }
     const value = localStorage.getItem(key);
     return value ? { key, value, shared: false } : null;
   },
-
   async set(key, value) {
-    if (window.storage && window.storage.set) {
+    if (window.storage?.set) {
       try {
         return await window.storage.set(key, value);
-      } catch (e) {
-        // Fall through to localStorage
-      }
+      } catch (e) {}
     }
     localStorage.setItem(key, value);
     return { key, value, shared: false };
   },
-
   async delete(key) {
-    if (window.storage && window.storage.delete) {
+    if (window.storage?.delete) {
       try {
         return await window.storage.delete(key);
-      } catch (e) {
-        // Fall through to localStorage
-      }
+      } catch (e) {}
     }
     localStorage.removeItem(key);
     return { key, deleted: true, shared: false };
   },
-
   async list(prefix = '') {
-    if (window.storage && window.storage.list) {
+    if (window.storage?.list) {
       try {
         return await window.storage.list(prefix);
-      } catch (e) {
-        // Fall through to localStorage
-      }
+      } catch (e) {}
     }
     const keys = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
-      if (key.startsWith(prefix)) {
-        keys.push(key);
-      }
+      if (key.startsWith(prefix)) keys.push(key);
     }
     return { keys, prefix, shared: false };
   }
@@ -68,42 +55,15 @@ const TrainingManagementApp = () => {
   const [trainings, setTrainings] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
 
-  // Load data and theme preference on mount
   useEffect(() => {
     loadData();
     loadThemePreference();
   }, []);
 
-  const loadThemePreference = async () => {
-    try {
-      const result = await storage.get('theme');
-      if (result && result.value === 'dark') {
-        setDarkMode(true);
-      }
-    } catch (error) {
-      console.log('No theme preference found');
-    }
-  };
-
-  const toggleTheme = async () => {
-    const newTheme = !darkMode;
-    setDarkMode(newTheme);
-    try {
-      await storage.set('theme', newTheme ? 'dark' : 'light');
-    } catch (error) {
-      console.error('Error saving theme preference:', error);
-    }
-  };
-
-  // Load data on mount
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = async () => {
     try {
       const result = await storage.list('training:');
-      if (result && result.keys) {
+      if (result?.keys?.length > 0) {
         const loadedTrainings = await Promise.all(
           result.keys.map(async (key) => {
             const data = await storage.get(key);
@@ -113,9 +73,111 @@ const TrainingManagementApp = () => {
         setTrainings(loadedTrainings.filter(Boolean));
       }
     } catch (error) {
-      console.log('No existing data, starting fresh');
+      console.log('No existing data');
       setTrainings([]);
     }
+  };
+
+  const loadThemePreference = async () => {
+    try {
+      const result = await storage.get('theme');
+      if (result?.value === 'dark') setDarkMode(true);
+    } catch (error) {
+      console.log('No theme preference');
+    }
+  };
+
+  const toggleTheme = async () => {
+    const newTheme = !darkMode;
+    setDarkMode(newTheme);
+    try {
+      await storage.set('theme', newTheme ? 'dark' : 'light');
+    } catch (error) {
+      console.error('Error saving theme:', error);
+    }
+  };
+
+  const loadTestData = () => {
+    const testData = [{
+      id: 'TR001',
+      clientName: 'TechCorp Industries',
+      contactName: 'Sarah Johnson',
+      contactEmail: 'sarah@techcorp.com',
+      contactPhone: '(555) 123-4567',
+      title: 'AI Fundamentals for Product Teams',
+      topicRequests: 'Machine learning basics, AI ethics, practical applications',
+      attendees: 25,
+      deliveryMode: 'Hybrid',
+      scopingCallDate: '2025-02-15',
+      stage: 'curriculum',
+      type: 'AI Fundamentals',
+      value: 45000,
+      deliveryDate: '2025-03-20',
+      scopingCallCompleted: true,
+      scopingCall: {
+        attendeeRoles: 'Product Managers, Senior Analysts, Engineering Leads',
+        trainingObjectives: 'At the end of the course, participants should be able to:\n• Understand fundamental AI/ML concepts\n• Evaluate AI solutions for business problems\n• Apply prompt engineering techniques',
+        deliveryMode: 'Hybrid',
+        duration: '2 days',
+        preferredTimeWindow: 'March 20-21, 2025',
+        numberOfParticipants: 25,
+        specialRequirements: 'Projector, breakout rooms, ChatGPT access',
+        notes: 'Client wants hands-on exercises',
+        completedDate: '2025-02-10'
+      },
+      coordinationCalls: [{
+        id: 'CC001',
+        callDate: '2025-02-20',
+        callTime: '14:00',
+        attendeesAndRoles: 'Sarah Johnson (Client), Mike Chen (Trainer)',
+        callPurpose: 'Logistics Update',
+        discussionSummary: 'Confirmed room setup and technical requirements',
+        updatedObjectives: 'Added focus on generative AI tools',
+        additionalMaterials: 'Client requested fintech case studies',
+        deliveryChanges: 'Changed start time from 9am to 8:30am',
+        followUpActions: '• Send agenda - Mike - 2/25\n• Prepare case studies - Lisa - 3/1',
+        notes: 'Client mentioned potential follow-up course'
+      }],
+      emailCommunications: [
+        {
+          id: 'EM001',
+          timestamp: '2025-02-12T09:30:00Z',
+          senderName: 'Sarah Johnson',
+          senderEmail: 'sarah@techcorp.com',
+          recipients: 'training@company.com',
+          subject: 'Initial Training Request - AI Fundamentals',
+          body: 'Hi Team,\n\nWe are interested in scheduling an AI fundamentals training for our product management team. We have approximately 25 people who would benefit from understanding AI concepts and how to apply them in product development.\n\nCould we schedule a call to discuss the details?\n\nBest regards,\nSarah Johnson\nVP of Product, TechCorp',
+          attachments: []
+        },
+        {
+          id: 'EM002',
+          timestamp: '2025-02-15T14:20:00Z',
+          senderName: 'Mike Chen',
+          senderEmail: 'mike@company.com',
+          recipients: 'sarah@techcorp.com',
+          subject: 'RE: Initial Training Request - AI Fundamentals',
+          body: 'Hi Sarah,\n\nThank you for reaching out! We would love to work with TechCorp on this training.\n\nBased on our scoping call today, I wanted to confirm:\n- 2-day hybrid training (March 20-21)\n- 25 participants from PM team\n- Focus on ML basics, AI ethics, and practical applications\n\nI will send over the proposal by end of week.\n\nBest,\nMike Chen\nSenior Trainer',
+          attachments: []
+        },
+        {
+          id: 'EM003',
+          timestamp: '2025-02-22T16:45:00Z',
+          senderName: 'Sarah Johnson',
+          senderEmail: 'sarah@techcorp.com',
+          recipients: 'mike@company.com',
+          subject: 'Additional Request - Fintech Case Studies',
+          body: 'Hi Mike,\n\nAfter our coordination call, I wanted to follow up on the fintech-specific case studies we discussed. Our team would really benefit from seeing examples relevant to our industry.\n\nAlso, please confirm the 8:30am start time works for the training materials delivery.\n\nThanks!\nSarah',
+          attachments: []
+        }
+      ],
+      createdAt: '2025-01-20T10:30:00Z',
+      updatedAt: '2025-02-22T16:45:00Z'
+    }];
+    
+    setTrainings(testData);
+    testData.forEach(training => {
+      storage.set(`training:${training.id}`, JSON.stringify(training));
+    });
   };
 
   const saveTraining = async (training) => {
@@ -123,7 +185,7 @@ const TrainingManagementApp = () => {
       await storage.set(`training:${training.id}`, JSON.stringify(training));
       await loadData();
     } catch (error) {
-      console.error('Error saving training:', error);
+      console.error('Error saving:', error);
     }
   };
 
@@ -132,7 +194,7 @@ const TrainingManagementApp = () => {
       await storage.delete(`training:${id}`);
       await loadData();
     } catch (error) {
-      console.error('Error deleting training:', error);
+      console.error('Error deleting:', error);
     }
   };
 
@@ -166,6 +228,8 @@ const TrainingManagementApp = () => {
       const training = {
         id: selectedItem?.id || `TR${Date.now()}`,
         ...formData,
+        value: parseFloat(formData.value) || 0,
+        attendees: parseInt(formData.attendees) || 0,
         createdAt: selectedItem?.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
@@ -175,6 +239,38 @@ const TrainingManagementApp = () => {
         ...selectedItem,
         scopingCall: formData,
         scopingCallCompleted: true,
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
+    } else if (modalType === 'coordination') {
+      const existingCalls = selectedItem.coordinationCalls || [];
+      const training = {
+        ...selectedItem,
+        coordinationCalls: [...existingCalls, { ...formData, id: `CC${Date.now()}` }],
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
+    } else if (modalType === 'email') {
+      const existingEmails = selectedItem.emailCommunications || [];
+      const training = {
+        ...selectedItem,
+        emailCommunications: [...existingEmails, { ...formData, id: `EM${Date.now()}`, timestamp: new Date().toISOString() }],
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
+    } else if (modalType === 'proposal') {
+      const existingProposals = selectedItem.proposalDocuments || [];
+      // Mark all existing proposals as not current
+      const updatedProposals = existingProposals.map(p => ({ ...p, isCurrent: false }));
+      const training = {
+        ...selectedItem,
+        proposalDocuments: [...updatedProposals, { 
+          ...formData, 
+          id: `PR${Date.now()}`, 
+          isCurrent: true,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: 'Current User' // In production, this would be the logged-in user
+        }],
         updatedAt: new Date().toISOString()
       };
       await saveTraining(training);
@@ -191,17 +287,11 @@ const TrainingManagementApp = () => {
     return matchesStage && matchesSearch;
   });
 
-  const getStageStats = () => {
-    const stats = {};
-    stages.forEach(stage => {
-      stats[stage.id] = trainings.filter(t => t.stage === stage.id).length;
-    });
-    return stats;
-  };
+  const stats = {};
+  stages.forEach(stage => {
+    stats[stage.id] = trainings.filter(t => t.stage === stage.id).length;
+  });
 
-  const stats = getStageStats();
-
-  // Theme classes
   const bgClass = darkMode ? 'bg-gray-900' : 'bg-gray-50';
   const cardBgClass = darkMode ? 'bg-gray-800' : 'bg-white';
   const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
@@ -213,7 +303,6 @@ const TrainingManagementApp = () => {
 
   return (
     <div className={`min-h-screen ${bgClass}`}>
-      {/* Header */}
       <header className={`${cardBgClass} border-b ${borderClass} sticky top-0 z-10`}>
         <div className="px-6 py-4">
           <div className="flex items-center justify-between">
@@ -223,16 +312,15 @@ const TrainingManagementApp = () => {
             </div>
             <div className="flex items-center gap-3">
               <button
-                onClick={toggleTheme}
-                className={`p-2 rounded-lg ${hoverClass} transition ${textClass}`}
-                title={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+                onClick={() => { if (window.confirm('Load test data?')) loadTestData(); }}
+                className={`px-3 py-2 rounded-lg ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} ${textClass} text-sm transition`}
               >
+                Load Test Data
+              </button>
+              <button onClick={toggleTheme} className={`p-2 rounded-lg ${hoverClass} transition ${textClass}`}>
                 {darkMode ? <Sun size={20} /> : <Moon size={20} />}
               </button>
-              <button
-                onClick={() => openModal('new')}
-                className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-              >
+              <button onClick={() => openModal('new')} className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
                 <Plus size={20} />
                 New Request
               </button>
@@ -241,45 +329,24 @@ const TrainingManagementApp = () => {
 
           {/* Navigation Tabs */}
           <div className={`flex gap-4 mt-4 border-b ${borderClass}`}>
-            <button
-              onClick={() => setActiveTab('pipeline')}
-              className={`px-4 py-2 font-medium transition ${
-                activeTab === 'pipeline'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : `${textSecondaryClass} hover:${textClass}`
-              }`}
-            >
-              Pipeline
-            </button>
-            <button
-              onClick={() => setActiveTab('calendar')}
-              className={`px-4 py-2 font-medium transition ${
-                activeTab === 'calendar'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : `${textSecondaryClass} hover:${textClass}`
-              }`}
-            >
-              Calendar
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-4 py-2 font-medium transition ${
-                activeTab === 'analytics'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : `${textSecondaryClass} hover:${textClass}`
-              }`}
-            >
-              Analytics
-            </button>
+            {['pipeline', 'documents', 'analytics'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 font-medium transition ${
+                  activeTab === tab ? 'text-blue-600 border-b-2 border-blue-600' : textSecondaryClass
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="px-6 py-6">
         {activeTab === 'pipeline' && (
           <>
-            {/* Stats Overview */}
             <div className="grid grid-cols-7 gap-4 mb-6">
               {stages.map(stage => (
                 <div key={stage.id} className={`${cardBgClass} rounded-lg p-4 border ${borderClass}`}>
@@ -290,7 +357,6 @@ const TrainingManagementApp = () => {
               ))}
             </div>
 
-            {/* Filters */}
             <div className="flex gap-4 mb-6">
               <div className="flex-1 relative">
                 <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${textSecondaryClass}`} size={20} />
@@ -314,7 +380,6 @@ const TrainingManagementApp = () => {
               </select>
             </div>
 
-            {/* Training List */}
             <div className={`${cardBgClass} rounded-lg border ${borderClass}`}>
               <table className="w-full">
                 <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b ${borderClass}`}>
@@ -322,17 +387,16 @@ const TrainingManagementApp = () => {
                     <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Client</th>
                     <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Request</th>
                     <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Contact</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Mode</th>
                     <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Stage</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Scoping</th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Calls</th>
                     <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Actions</th>
                   </tr>
                 </thead>
                 <tbody className={`divide-y ${borderClass}`}>
                   {filteredTrainings.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className={`px-6 py-12 text-center ${textSecondaryClass}`}>
-                        No client requests found. Click "New Request" to get started.
+                      <td colSpan="6" className={`px-6 py-12 text-center ${textSecondaryClass}`}>
+                        No trainings found. Click "Load Test Data" or "New Request".
                       </td>
                     </tr>
                   ) : (
@@ -359,56 +423,57 @@ const TrainingManagementApp = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className={`flex items-center gap-1 text-sm ${textClass}`}>
-                              {training.deliveryMode === 'Virtual' && <Video size={14} />}
-                              {training.deliveryMode === 'In-Person' && <Building size={14} />}
-                              {training.deliveryMode === 'Blended' && <MapPin size={14} />}
-                              {training.deliveryMode}
-                            </div>
-                          </td>
-                          <td className="px-6 py-4">
                             <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white ${stage?.color}`}>
                               {stage?.label}
                             </span>
                           </td>
                           <td className="px-6 py-4">
-                            {training.scopingCallCompleted ? (
-                              <span className="inline-flex items-center gap-1 text-green-600 text-sm">
-                                <CheckCircle size={16} />
-                                Completed
-                              </span>
-                            ) : (
-                              <span className={`${textSecondaryClass} text-sm`}>Not recorded</span>
-                            )}
+                            <div className="space-y-1">
+                              {training.scopingCallCompleted && (
+                                <div className="flex items-center gap-1 text-green-600 text-xs">
+                                  <CheckCircle size={14} />
+                                  Scoping
+                                </div>
+                              )}
+                              {training.coordinationCalls?.length > 0 && (
+                                <div className="flex items-center gap-1 text-blue-600 text-xs">
+                                  <MessageSquare size={14} />
+                                  {training.coordinationCalls.length} Coord
+                                </div>
+                              )}
+                              {training.emailCommunications?.length > 0 && (
+                                <div className="flex items-center gap-1 text-purple-600 text-xs">
+                                  <Inbox size={14} />
+                                  {training.emailCommunications.length} Emails
+                                </div>
+                              )}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex gap-2">
-                              <button
-                                onClick={() => openModal('scoping', training)}
-                                className={`p-1 ${textSecondaryClass} hover:text-green-600 transition`}
-                                title="Record scoping call"
-                              >
+                              <button onClick={() => openModal('email', training)} className={`p-1 ${textSecondaryClass} hover:text-purple-600 transition`} title="Add email communication">
+                                <Inbox size={18} />
+                              </button>
+                              <button onClick={() => openModal('scoping', training)} className={`p-1 ${textSecondaryClass} hover:text-green-600 transition`} title="Record scoping call">
                                 <FileText size={18} />
                               </button>
-                              <button
-                                onClick={() => openModal('view', training)}
-                                className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`}
-                                title="View details"
+                              <button 
+                                onClick={() => openModal('coordination', training)} 
+                                disabled={!training.scopingCallCompleted}
+                                className={`p-1 ${training.scopingCallCompleted ? `${textSecondaryClass} hover:text-blue-600` : 'text-gray-300 cursor-not-allowed'} transition`}
+                                title={training.scopingCallCompleted ? "Record coordination call" : "Complete scoping call first"}
                               >
+                                <MessageSquare size={18} />
+                              </button>
+                              <button onClick={() => openModal('view', training)} className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`} title="View details">
                                 <Eye size={18} />
                               </button>
-                              <button
-                                onClick={() => openModal('edit', training)}
-                                className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`}
-                                title="Edit"
-                              >
+                              <button onClick={() => openModal('edit', training)} className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`} title="Edit">
                                 <Edit2 size={18} />
                               </button>
                               <button
                                 onClick={() => {
-                                  if (window.confirm('Delete this training request?')) {
-                                    deleteTraining(training.id);
-                                  }
+                                  if (window.confirm('Delete this training?')) deleteTraining(training.id);
                                 }}
                                 className={`p-1 ${textSecondaryClass} hover:text-red-600 transition`}
                                 title="Delete"
@@ -427,73 +492,698 @@ const TrainingManagementApp = () => {
           </>
         )}
 
-        {activeTab === 'calendar' && (
-          <div className={`${cardBgClass} rounded-lg border ${borderClass} p-8 text-center`}>
-            <Calendar size={48} className={`mx-auto ${textSecondaryClass} mb-4`} />
-            <h3 className={`text-lg font-medium ${textClass} mb-2`}>Calendar View</h3>
-            <p className={textSecondaryClass}>Calendar view with scheduled trainings coming soon</p>
+        {activeTab === 'documents' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className={`text-xl font-bold ${textClass}`}>Proposal Documents</h2>
+              <button
+                onClick={() => {
+                  const training = trainings[0]; // For demo, open modal for first training
+                  if (training) openModal('proposal', training);
+                }}
+                className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
+              >
+                <Upload size={20} />
+                Add Proposal
+              </button>
+            </div>
+
+            <div className="grid gap-4">
+              {trainings.map(training => (
+                training.proposalDocuments?.length > 0 && (
+                  <div key={training.id} className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                    <h3 className={`font-semibold ${textClass} mb-4`}>{training.clientName} - {training.title}</h3>
+                    <div className="space-y-3">
+                      {training.proposalDocuments.map(doc => (
+                        <div key={doc.id} className={`flex items-start gap-4 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <File className="text-blue-600 mt-1" size={24} />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className={`font-medium ${textClass}`}>{doc.fileName || doc.linkUrl}</span>
+                              {doc.isCurrent && (
+                                <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full">Current</span>
+                              )}
+                            </div>
+                            <div className={`text-sm ${textSecondaryClass} space-y-1`}>
+                              <div>Version: {doc.versionLabel}</div>
+                              <div>Uploaded by {doc.uploadedBy} on {new Date(doc.uploadedAt).toLocaleString()}</div>
+                              {doc.notes && <div className="italic">Notes: {doc.notes}</div>}
+                            </div>
+                            {doc.linkUrl && (
+                              <a 
+                                href={doc.linkUrl} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm mt-2"
+                              >
+                                <ExternalLink size={14} />
+                                Open Link
+                              </a>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => openModal('proposal', training)}
+                            className={`p-2 ${textSecondaryClass} hover:text-blue-600 transition`}
+                            title="Add new version"
+                          >
+                            <Upload size={18} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )
+              ))}
+              {!trainings.some(t => t.proposalDocuments?.length > 0) && (
+                <div className={`${cardBgClass} rounded-lg border ${borderClass} p-12 text-center`}>
+                  <File size={48} className={`mx-auto ${textSecondaryClass} mb-4`} />
+                  <p className={textSecondaryClass}>No proposal documents yet. Add proposals to training engagements.</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-3 gap-6">
-              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`font-medium ${textClass}`}>Total Pipeline Value</h3>
-                  <DollarSign className="text-green-600" size={24} />
-                </div>
-                <div className={`text-3xl font-bold ${textClass}`}>
-                  ${trainings.reduce((sum, t) => sum + (t.value || 0), 0).toLocaleString()}
-                </div>
+          <div className="grid grid-cols-3 gap-6">
+            <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`font-medium ${textClass}`}>Total Pipeline Value</h3>
+                <DollarSign className="text-green-600" size={24} />
               </div>
-              
-              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`font-medium ${textClass}`}>Active Requests</h3>
-                  <Users className="text-blue-600" size={24} />
-                </div>
-                <div className={`text-3xl font-bold ${textClass}`}>
-                  {trainings.filter(t => t.stage !== 'completed').length}
-                </div>
+              <div className={`text-3xl font-bold ${textClass}`}>
+                ${trainings.reduce((sum, t) => sum + (t.value || 0), 0).toLocaleString()}
               </div>
-              
-              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className={`font-medium ${textClass}`}>Completed</h3>
-                  <CheckCircle className="text-green-600" size={24} />
-                </div>
-                <div className={`text-3xl font-bold ${textClass}`}>
-                  {trainings.filter(t => t.stage === 'completed').length}
-                </div>
+            </div>
+            
+            <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`font-medium ${textClass}`}>Active Requests</h3>
+                <Users className="text-blue-600" size={24} />
+              </div>
+              <div className={`text-3xl font-bold ${textClass}`}>
+                {trainings.filter(t => t.stage !== 'completed').length}
+              </div>
+            </div>
+            
+            <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`font-medium ${textClass}`}>Completed</h3>
+                <CheckCircle className="text-green-600" size={24} />
+              </div>
+              <div className={`text-3xl font-bold ${textClass}`}>
+                {trainings.filter(t => t.stage === 'completed').length}
               </div>
             </div>
           </div>
         )}
       </main>
 
-      {/* Modal */}
       {showModal && (
-        modalType === 'scoping' ? (
-          <ScopingCallModal
-            training={selectedItem}
-            darkMode={darkMode}
-            onClose={closeModal}
-            onSubmit={handleSubmit}
-          />
-        ) : (
-          <TrainingModal
-            type={modalType}
-            training={selectedItem}
-            stages={stages}
-            trainingTypes={trainingTypes}
-            deliveryModes={deliveryModes}
-            darkMode={darkMode}
-            onClose={closeModal}
-            onSubmit={handleSubmit}
-          />
-        )
+        <>
+          {modalType === 'proposal' ? (
+            <ProposalModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : modalType === 'email' ? (
+            <EmailModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : modalType === 'coordination' ? (
+            <CoordinationCallModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : modalType === 'scoping' ? (
+            <ScopingCallModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : (
+            <TrainingModal type={modalType} training={selectedItem} stages={stages} trainingTypes={trainingTypes} deliveryModes={deliveryModes} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          )}
+        </>
       )}
+    </div>
+  );
+};
+
+const ProposalModal = ({ training, darkMode, onClose, onSubmit }) => {
+  const [uploadType, setUploadType] = useState('link'); // 'link' or 'file'
+  const [formData, setFormData] = useState({
+    fileName: '',
+    linkUrl: '',
+    versionLabel: '',
+    notes: ''
+  });
+
+  const [fileInfo, setFileInfo] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = ['.pdf', '.docx', '.pptx'];
+      const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+      
+      if (!allowedTypes.includes(fileExt)) {
+        alert('Only PDF, DOCX, and PPTX files are allowed');
+        e.target.value = '';
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) { // 10MB limit
+        alert('File size must be less than 10MB');
+        e.target.value = '';
+        return;
+      }
+
+      setFileInfo({
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+        type: file.type
+      });
+      setFormData(prev => ({ ...prev, fileName: file.name }));
+    }
+  };
+
+  const validateUrl = (url) => {
+    try {
+      new URL(url);
+      return url.includes('sharepoint.com') || url.includes('drive.google.com') || url.includes('dropbox.com') || url.includes('box.com');
+    } catch {
+      return false;
+    }
+  };
+
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${bgClass} rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <div className="flex items-center gap-3">
+            <Upload className="text-green-600" size={24} />
+            <div>
+              <h2 className={`text-xl font-bold ${textClass}`}>Add Proposal Document</h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>{training?.clientName} - {training?.title}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className={`${darkMode ? 'bg-green-900 border-green-700' : 'bg-green-50 border-green-200'} border rounded-lg p-4`}>
+            <p className={`text-sm ${darkMode ? 'text-green-100' : 'text-green-900'}`}>
+              <strong>Purpose:</strong> Upload or link proposal documents so all stakeholders can access the most recent proposal. Only one document can be marked as the current version.
+            </p>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-3`}>Upload Method</label>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setUploadType('link')}
+                className={`flex-1 p-4 rounded-lg border-2 transition ${
+                  uploadType === 'link'
+                    ? 'border-green-600 bg-green-50 dark:bg-green-900'
+                    : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                }`}
+              >
+                <ExternalLink className={uploadType === 'link' ? 'text-green-600' : textSecondaryClass} size={24} />
+                <div className={`font-medium ${textClass} mt-2`}>Paste Link</div>
+                <div className={`text-xs ${textSecondaryClass} mt-1`}>SharePoint, Google Drive, etc.</div>
+              </button>
+              <button
+                onClick={() => setUploadType('file')}
+                className={`flex-1 p-4 rounded-lg border-2 transition ${
+                  uploadType === 'file'
+                    ? 'border-green-600 bg-green-50 dark:bg-green-900'
+                    : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                }`}
+              >
+                <Upload className={uploadType === 'file' ? 'text-green-600' : textSecondaryClass} size={24} />
+                <div className={`font-medium ${textClass} mt-2`}>Upload File</div>
+                <div className={`text-xs ${textSecondaryClass} mt-1`}>PDF, DOCX, PPTX</div>
+              </button>
+            </div>
+          </div>
+
+          {uploadType === 'link' && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Document Link *</label>
+              <input
+                type="url"
+                value={formData.linkUrl}
+                onChange={(e) => setFormData(prev => ({ ...prev, linkUrl: e.target.value }))}
+                required
+                placeholder="https://sharepoint.com/... or https://drive.google.com/..."
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-green-500`}
+              />
+              <p className={`text-xs ${textSecondaryClass} mt-1`}>
+                Paste a link to SharePoint, Google Drive, Dropbox, or Box
+              </p>
+              {formData.linkUrl && !validateUrl(formData.linkUrl) && (
+                <p className="text-xs text-red-600 mt-1">⚠️ Please provide a valid SharePoint or cloud storage link</p>
+              )}
+            </div>
+          )}
+
+          {uploadType === 'file' && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Upload File *</label>
+              <div className={`border-2 border-dashed ${inputBorderClass} rounded-lg p-6 text-center`}>
+                <Upload className={`mx-auto ${textSecondaryClass} mb-2`} size={32} />
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.pptx"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label
+                  htmlFor="file-upload"
+                  className={`cursor-pointer text-sm ${textClass} hover:text-green-600 transition`}
+                >
+                  Click to upload or drag and drop
+                </label>
+                <p className={`text-xs ${textSecondaryClass} mt-1`}>
+                  PDF, DOCX, or PPTX (max 10MB)
+                </p>
+              </div>
+              {fileInfo && (
+                <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <div className="flex items-center gap-2">
+                    <File className="text-green-600" size={20} />
+                    <div className="flex-1">
+                      <div className={`text-sm font-medium ${textClass}`}>{fileInfo.name}</div>
+                      <div className={`text-xs ${textSecondaryClass}`}>{fileInfo.size}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <p className={`text-xs ${textSecondaryClass} mt-2`}>
+                Note: In this demo, file content is not actually uploaded. Only the filename is stored.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Version Label *</label>
+            <input
+              type="text"
+              value={formData.versionLabel}
+              onChange={(e) => setFormData(prev => ({ ...prev, versionLabel: e.target.value }))}
+              required
+              placeholder="e.g., v1.0, Draft, Final, 2025-01-15"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-green-500`}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Notes</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              rows="3"
+              placeholder="Any additional notes about this version..."
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-green-500`}
+            />
+          </div>
+
+          <div className={`${darkMode ? 'bg-yellow-900 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3`}>
+            <p className={`text-sm ${darkMode ? 'text-yellow-100' : 'text-yellow-900'}`}>
+              ℹ️ This proposal will be marked as the <strong>current version</strong>. Previous versions will remain accessible but will no longer be marked as current.
+            </p>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (uploadType === 'link' && !validateUrl(formData.linkUrl)) {
+                  alert('Please provide a valid cloud storage link');
+                  return;
+                }
+                if (uploadType === 'file' && !formData.fileName) {
+                  alert('Please select a file to upload');
+                  return;
+                }
+                if (!formData.versionLabel) {
+                  alert('Please provide a version label');
+                  return;
+                }
+                onSubmit(formData);
+              }}
+              className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
+            >
+              Add Proposal Document
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const EmailModal = ({ training, darkMode, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    senderName: '',
+    senderEmail: '',
+    recipients: '',
+    subject: '',
+    body: '',
+    attachments: []
+  });
+
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${bgClass} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <div className="flex items-center gap-3">
+            <Inbox className="text-purple-600" size={24} />
+            <div>
+              <h2 className={`text-xl font-bold ${textClass}`}>Add Email Communication</h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>{training?.clientName} - {training?.title}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className={`${darkMode ? 'bg-purple-900 border-purple-700' : 'bg-purple-50 border-purple-200'} border rounded-lg p-4`}>
+            <p className={`text-sm ${darkMode ? 'text-purple-100' : 'text-purple-900'}`}>
+              <strong>Purpose:</strong> Capture email communications to maintain a complete history of all project correspondence for context, accountability, and transparency.
+            </p>
+          </div>
+
+          <div>
+            <h3 className={`text-lg font-semibold ${textClass} mb-4 pb-2 border-b ${borderClass}`}>Email Details</h3>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Sender Name *</label>
+                <input
+                  type="text"
+                  value={formData.senderName}
+                  onChange={(e) => setFormData(prev => ({ ...prev, senderName: e.target.value }))}
+                  required
+                  placeholder="e.g., Sarah Johnson"
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-purple-500`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Sender Email *</label>
+                <input
+                  type="email"
+                  value={formData.senderEmail}
+                  onChange={(e) => setFormData(prev => ({ ...prev, senderEmail: e.target.value }))}
+                  required
+                  placeholder="e.g., sarah@techcorp.com"
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-purple-500`}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Recipient(s) *</label>
+              <input
+                type="text"
+                value={formData.recipients}
+                onChange={(e) => setFormData(prev => ({ ...prev, recipients: e.target.value }))}
+                required
+                placeholder="e.g., training@company.com, mike@company.com"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-purple-500`}
+              />
+              <p className={`text-xs ${textSecondaryClass} mt-1`}>Separate multiple recipients with commas</p>
+            </div>
+
+            <div className="mt-4">
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Subject Line *</label>
+              <input
+                type="text"
+                value={formData.subject}
+                onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+                required
+                placeholder="e.g., Training Request - AI Fundamentals"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-purple-500`}
+              />
+            </div>
+          </div>
+
+          <div>
+            <h3 className={`text-lg font-semibold ${textClass} mb-4 pb-2 border-b ${borderClass}`}>Email Content</h3>
+            
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Email Body *</label>
+              <textarea
+                value={formData.body}
+                onChange={(e) => setFormData(prev => ({ ...prev, body: e.target.value }))}
+                required
+                rows="12"
+                placeholder="Paste the full email body here..."
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-purple-500 font-mono text-sm`}
+              />
+              <p className={`text-xs ${textSecondaryClass} mt-1`}>Copy and paste the email content to preserve formatting</p>
+            </div>
+
+            <div className="mt-4">
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Attachments</label>
+              <div className={`flex items-center gap-2 px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg`}>
+                <Paperclip size={16} className={textSecondaryClass} />
+                <input
+                  type="text"
+                  value={formData.attachments.join(', ')}
+                  onChange={(e) => setFormData(prev => ({ ...prev, attachments: e.target.value.split(',').map(a => a.trim()).filter(Boolean) }))}
+                  placeholder="List attachment filenames (e.g., proposal.pdf, agenda.docx)"
+                  className={`flex-1 bg-transparent focus:outline-none ${textClass}`}
+                />
+              </div>
+              <p className={`text-xs ${textSecondaryClass} mt-1`}>Note: Actual files are not uploaded, only filenames are recorded</p>
+            </div>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onSubmit(formData)}
+              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
+            >
+              Add Email to Record
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CoordinationCallModal = ({ training, darkMode, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    callDate: new Date().toISOString().split('T')[0],
+    callTime: new Date().toTimeString().slice(0, 5),
+    attendeesAndRoles: training?.scopingCall?.attendeeRoles || '',
+    callPurpose: '',
+    discussionSummary: '',
+    updatedObjectives: '',
+    additionalMaterials: '',
+    deliveryChanges: '',
+    followUpActions: '',
+    notes: ''
+  });
+
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${bgClass} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <div className="flex items-center gap-3">
+            <MessageSquare className="text-blue-600" size={24} />
+            <div>
+              <h2 className={`text-xl font-bold ${textClass}`}>Record Coordination Call</h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>{training?.clientName} - {training?.title}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className={`${darkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4`}>
+            <p className={`text-sm ${darkMode ? 'text-blue-100' : 'text-blue-900'}`}>
+              <strong>Purpose:</strong> Capture additional client instructions, updates, or changes to the training plan.
+            </p>
+          </div>
+
+          <div>
+            <h3 className={`text-lg font-semibold ${textClass} mb-4 pb-2 border-b ${borderClass}`}>Call Details</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Call Date *</label>
+                <input
+                  type="date"
+                  name="callDate"
+                  value={formData.callDate}
+                  onChange={(e) => setFormData(prev => ({ ...prev, callDate: e.target.value }))}
+                  required
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Call Time *</label>
+                <input
+                  type="time"
+                  name="callTime"
+                  value={formData.callTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, callTime: e.target.value }))}
+                  required
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Attendees and Roles *</label>
+              <input
+                type="text"
+                value={formData.attendeesAndRoles}
+                onChange={(e) => setFormData(prev => ({ ...prev, attendeesAndRoles: e.target.value }))}
+                required
+                placeholder="e.g., John Smith (Client Lead), Sarah Johnson (Training Manager)"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+
+            <div className="mt-4">
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Purpose of Call *</label>
+              <select
+                value={formData.callPurpose}
+                onChange={(e) => setFormData(prev => ({ ...prev, callPurpose: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              >
+                <option value="">Select purpose...</option>
+                <option value="Logistics Update">Logistics Update</option>
+                <option value="Additional Content Requests">Additional Content Requests</option>
+                <option value="Instructor Confirmation">Instructor Confirmation</option>
+                <option value="Participant Confirmation">Participant Confirmation</option>
+                <option value="Schedule Changes">Schedule Changes</option>
+                <option value="Materials Review">Materials Review</option>
+                <option value="General Coordination">General Coordination</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <h3 className={`text-lg font-semibold ${textClass} mb-4 pb-2 border-b ${borderClass}`}>Discussion Summary</h3>
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Summary of Discussion Points *</label>
+                <textarea
+                  value={formData.discussionSummary}
+                  onChange={(e) => setFormData(prev => ({ ...prev, discussionSummary: e.target.value }))}
+                  required
+                  rows="4"
+                  placeholder="Key topics discussed, decisions made, questions raised..."
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>New or Updated Training Objectives</label>
+                <textarea
+                  value={formData.updatedObjectives}
+                  onChange={(e) => setFormData(prev => ({ ...prev, updatedObjectives: e.target.value }))}
+                  rows="3"
+                  placeholder="Any changes or additions to objectives..."
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className={`text-lg font-semibold ${textClass} mb-4 pb-2 border-b ${borderClass}`}>Updates and Changes</h3>
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Additional Materials Requested</label>
+                <textarea
+                  value={formData.additionalMaterials}
+                  onChange={(e) => setFormData(prev => ({ ...prev, additionalMaterials: e.target.value }))}
+                  rows="3"
+                  placeholder="List any new materials, handouts, tools, or resources..."
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Changes to Delivery Mode, Dates, or Duration</label>
+                <textarea
+                  value={formData.deliveryChanges}
+                  onChange={(e) => setFormData(prev => ({ ...prev, deliveryChanges: e.target.value }))}
+                  rows="3"
+                  placeholder="Note any changes to delivery format, dates, or duration..."
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h3 className={`text-lg font-semibold ${textClass} mb-4 pb-2 border-b ${borderClass}`}>Follow-Up</h3>
+            <div className="space-y-4">
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Follow-Up Actions and Responsible Parties *</label>
+                <textarea
+                  value={formData.followUpActions}
+                  onChange={(e) => setFormData(prev => ({ ...prev, followUpActions: e.target.value }))}
+                  required
+                  rows="4"
+                  placeholder="List action items:&#10;• Update participant list - Sarah - 3/15/2025&#10;• Send revised agenda - Mike - 3/10/2025"
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500 font-mono text-sm`}
+                />
+              </div>
+              <div>
+                <label className={`block text-sm font-medium ${textClass} mb-1`}>Notes / Client Instructions</label>
+                <textarea
+                  value={formData.notes}
+                  onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                  rows="3"
+                  placeholder="Any additional notes or context..."
+                  className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onSubmit(formData)}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              Save Coordination Call
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
@@ -511,211 +1201,133 @@ const ScopingCallModal = ({ training, darkMode, onClose, onSubmit }) => {
     completedDate: new Date().toISOString().split('T')[0]
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmitClick = () => {
-    onSubmit(formData);
-  };
-
-  const deliveryModes = ['Virtual', 'On-site', 'Hybrid'];
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
+      <div className={`${bgClass} rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
           <div className="flex items-center gap-3">
             <FileText className="text-green-600" size={24} />
             <div>
-              <h2 className="text-xl font-bold text-gray-900">Record Scoping Call</h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {training?.clientName} - {training?.title}
-              </p>
+              <h2 className={`text-xl font-bold ${textClass}`}>Record Scoping Call</h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>{training?.clientName} - {training?.title}</p>
             </div>
           </div>
         </div>
 
         <div className="p-6 space-y-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p className="text-sm text-blue-900">
-              <strong>Purpose:</strong> Record detailed requirements from the scoping call so course writers and trainers can reference sponsor requests throughout development and delivery.
-            </p>
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Attendee Roles *</label>
+            <input
+              type="text"
+              value={formData.attendeeRoles}
+              onChange={(e) => setFormData(prev => ({ ...prev, attendeeRoles: e.target.value }))}
+              required
+              placeholder="e.g., Executives, Managers, Analysts"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
           </div>
 
-          {/* Participant Information */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Participant Information</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Attendee Roles *
-                </label>
-                <input
-                  type="text"
-                  name="attendeeRoles"
-                  value={formData.attendeeRoles}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., Executives, Managers, Analysts, Product Managers, Engineers"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                <p className="text-xs text-gray-500 mt-1">Specify the job roles or levels of participants</p>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Number of Participants (Estimated) *
-                </label>
-                <input
-                  type="number"
-                  name="numberOfParticipants"
-                  value={formData.numberOfParticipants}
-                  onChange={handleChange}
-                  required
-                  min="1"
-                  placeholder="Expected number of attendees"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Training Objectives *</label>
+            <textarea
+              value={formData.trainingObjectives}
+              onChange={(e) => setFormData(prev => ({ ...prev, trainingObjectives: e.target.value }))}
+              required
+              rows="5"
+              placeholder="At the end of the course, participants should be able to..."
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
           </div>
 
-          {/* Training Objectives */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Learning Outcomes</h3>
-            
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Training Objectives *
-              </label>
-              <textarea
-                name="trainingObjectives"
-                value={formData.trainingObjectives}
-                onChange={handleChange}
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Delivery Mode *</label>
+              <select
+                value={formData.deliveryMode}
+                onChange={(e) => setFormData(prev => ({ ...prev, deliveryMode: e.target.value }))}
                 required
-                rows="5"
-                placeholder="At the end of the course, participants should be able to...&#10;&#10;• Understand key AI concepts and applications&#10;• Apply AI tools to product management workflows&#10;• Evaluate AI solutions for business problems&#10;• ..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-              />
-              <p className="text-xs text-gray-500 mt-1">List specific, measurable learning objectives</p>
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              >
+                <option value="">Select mode...</option>
+                <option value="Virtual">Virtual</option>
+                <option value="On-site">On-site</option>
+                <option value="Hybrid">Hybrid</option>
+              </select>
             </div>
-          </div>
-
-          {/* Logistics */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Delivery Logistics</h3>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Delivery Mode *
-                </label>
-                <select
-                  name="deliveryMode"
-                  value={formData.deliveryMode}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="">Select mode...</option>
-                  {deliveryModes.map(mode => (
-                    <option key={mode} value={mode}>{mode}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Duration *
-                </label>
-                <input
-                  type="text"
-                  name="duration"
-                  value={formData.duration}
-                  onChange={handleChange}
-                  required
-                  placeholder="e.g., 2 days, 6 hours, 3 half-days"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Preferred Time Window for Delivery *
-              </label>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Duration *</label>
               <input
                 type="text"
-                name="preferredTimeWindow"
-                value={formData.preferredTimeWindow}
-                onChange={handleChange}
+                value={formData.duration}
+                onChange={(e) => setFormData(prev => ({ ...prev, duration: e.target.value }))}
                 required
-                placeholder="e.g., Q1 2025, March 15-20, Next month, Week of May 5th"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="e.g., 2 days, 6 hours"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
               />
             </div>
           </div>
 
-          {/* Special Requirements */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Additional Details</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Special Requirements / Constraints
-                </label>
-                <textarea
-                  name="specialRequirements"
-                  value={formData.specialRequirements}
-                  onChange={handleChange}
-                  rows="3"
-                  placeholder="e.g., Technical setup (specific software, tools), materials needed, language preferences, accessibility requirements, budget constraints"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Notes / Additional Context
-                </label>
-                <textarea
-                  name="notes"
-                  value={formData.notes}
-                  onChange={handleChange}
-                  rows="4"
-                  placeholder="Capture any qualitative details, client preferences, background information, or other important context from the scoping call..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Scoping Call Completed Date
-                </label>
-                <input
-                  type="date"
-                  name="completedDate"
-                  value={formData.completedDate}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Preferred Time Window *</label>
+            <input
+              type="text"
+              value={formData.preferredTimeWindow}
+              onChange={(e) => setFormData(prev => ({ ...prev, preferredTimeWindow: e.target.value }))}
+              required
+              placeholder="e.g., Q1 2025, March 15-20"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Number of Participants *</label>
+            <input
+              type="number"
+              value={formData.numberOfParticipants}
+              onChange={(e) => setFormData(prev => ({ ...prev, numberOfParticipants: e.target.value }))}
+              required
+              min="1"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Special Requirements</label>
+            <textarea
+              value={formData.specialRequirements}
+              onChange={(e) => setFormData(prev => ({ ...prev, specialRequirements: e.target.value }))}
+              rows="3"
+              placeholder="Technical setup, materials, language preferences..."
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Notes</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              rows="3"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
             >
               Cancel
             </button>
             <button
-              onClick={handleSubmitClick}
+              onClick={() => onSubmit(formData)}
               className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
             >
               Save Scoping Call
@@ -727,7 +1339,7 @@ const ScopingCallModal = ({ training, darkMode, onClose, onSubmit }) => {
   );
 };
 
-const TrainingModal = ({ type, training, stages, trainingTypes, deliveryModes, onClose, onSubmit }) => {
+const TrainingModal = ({ type, training, stages, trainingTypes, deliveryModes, darkMode, onClose, onSubmit }) => {
   const [formData, setFormData] = useState(training || {
     clientName: '',
     contactName: '',
@@ -739,376 +1351,201 @@ const TrainingModal = ({ type, training, stages, trainingTypes, deliveryModes, o
     deliveryMode: '',
     scopingCallDate: '',
     stage: 'intake',
+    type: '',
     value: '',
     deliveryDate: '',
     description: '',
     notes: ''
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmitClick = () => {
-    onSubmit({
-      ...formData,
-      value: parseFloat(formData.value) || 0,
-      attendees: parseInt(formData.attendees) || 0
-    });
-  };
-
   const isViewMode = type === 'view';
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4">
-          <h2 className="text-xl font-bold text-gray-900">
+      <div className={`${bgClass} rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <h2 className={`text-xl font-bold ${textClass}`}>
             {type === 'new' ? 'New Client Request' : type === 'edit' ? 'Edit Request' : 'Request Details'}
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            {type === 'new' && 'Create a record of a client\'s training request'}
-          </p>
-          
-          {/* Show scoping call summary if completed */}
-          {isViewMode && training?.scopingCallCompleted && (
-            <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2 text-green-800 font-medium text-sm">
-                <CheckCircle size={16} />
-                Scoping Call Completed
-              </div>
-            </div>
-          )}
         </div>
 
         <div className="p-6 space-y-6">
-          {/* Client Information Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Client Information</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Client Name *
-                </label>
-                <input
-                  type="text"
-                  name="clientName"
-                  value={formData.clientName}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  required
-                  placeholder="Enter organization or company name"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Point of Contact Section */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Point of Contact</h3>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Contact Name *
-                </label>
-                <input
-                  type="text"
-                  name="contactName"
-                  value={formData.contactName}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  required
-                  placeholder="Full name of primary contact"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address *
-                </label>
-                <input
-                  type="email"
-                  name="contactEmail"
-                  value={formData.contactEmail}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  required
-                  placeholder="contact@company.com"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  name="contactPhone"
-                  value={formData.contactPhone}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  placeholder="(555) 123-4567"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Training Request Details */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Training Request Details</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Training Title *
-                </label>
-                <input
-                  type="text"
-                  name="title"
-                  value={formData.title}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  required
-                  placeholder="e.g., AI Fundamentals for Product Teams"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Initial Topic Requests *
-                </label>
-                <textarea
-                  name="topicRequests"
-                  value={formData.topicRequests}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  required
-                  rows="3"
-                  placeholder="List the topics the client has requested (e.g., Machine Learning basics, AI ethics, Product strategy with AI)"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Number of Attendees *
-                  </label>
-                  <input
-                    type="number"
-                    name="attendees"
-                    value={formData.attendees}
-                    onChange={handleChange}
-                    disabled={isViewMode}
-                    required
-                    min="1"
-                    placeholder="Expected participants"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Delivery Mode *
-                  </label>
-                  <select
-                    name="deliveryMode"
-                    value={formData.deliveryMode}
-                    onChange={handleChange}
-                    disabled={isViewMode}
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                  >
-                    <option value="">Select mode...</option>
-                    {deliveryModes.map(mode => (
-                      <option key={mode} value={mode}>{mode}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Initial Scoping Call Date *
-                </label>
-                <input
-                  type="date"
-                  name="scopingCallDate"
-                  value={formData.scopingCallDate}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  required
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Scoping Call Details (if completed) */}
-          {isViewMode && training?.scopingCallCompleted && training?.scopingCall && (
+          {isViewMode && (training?.emailCommunications?.length > 0 || training?.coordinationCalls?.length > 0 || training?.scopingCallCompleted) && (
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b flex items-center gap-2">
-                <FileText size={20} className="text-green-600" />
-                Scoping Call Results
-              </h3>
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase">Attendee Roles</div>
-                  <div className="text-sm text-gray-900 mt-1">{training.scopingCall.attendeeRoles}</div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase">Training Objectives</div>
-                  <div className="text-sm text-gray-900 mt-1 whitespace-pre-wrap">{training.scopingCall.trainingObjectives}</div>
-                </div>
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase">Delivery Mode</div>
-                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.deliveryMode}</div>
+              <h3 className={`text-lg font-semibold ${textClass} mb-4`}>Communications History</h3>
+              <div className="space-y-4">
+                {/* Email Communications */}
+                {training?.emailCommunications?.map((email) => (
+                  <div key={email.id} className={`${darkMode ? 'bg-purple-900 bg-opacity-30' : 'bg-purple-50'} border ${darkMode ? 'border-purple-700' : 'border-purple-200'} rounded-lg p-4`}>
+                    <div className="flex items-start gap-3">
+                      <Inbox className="text-purple-600 mt-1" size={20} />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className={`font-semibold ${textClass}`}>{email.subject}</div>
+                          <div className={`text-xs ${textSecondaryClass}`}>
+                            {new Date(email.timestamp).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className={`text-sm ${textSecondaryClass} mb-2`}>
+                          <strong>From:</strong> {email.senderName} ({email.senderEmail})
+                          <br />
+                          <strong>To:</strong> {email.recipients}
+                        </div>
+                        <div className={`text-sm ${textClass} whitespace-pre-wrap bg-${darkMode ? 'gray-800' : 'white'} p-3 rounded border ${borderClass}`}>
+                          {email.body}
+                        </div>
+                        {email.attachments?.length > 0 && (
+                          <div className={`text-xs ${textSecondaryClass} mt-2 flex items-center gap-1`}>
+                            <Paperclip size={12} />
+                            <span>Attachments: {email.attachments.join(', ')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase">Duration</div>
-                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.duration}</div>
+                ))}
+
+                {/* Coordination Calls */}
+                {training?.coordinationCalls?.map((call, idx) => (
+                  <div key={call.id} className={`${darkMode ? 'bg-blue-900 bg-opacity-30' : 'bg-blue-50'} border ${darkMode ? 'border-blue-700' : 'border-blue-200'} rounded-lg p-4`}>
+                    <div className="flex items-start gap-3">
+                      <MessageSquare className="text-blue-600 mt-1" size={20} />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className={`font-semibold ${textClass}`}>Coordination Call #{idx + 1} - {call.callPurpose}</div>
+                          <div className={`text-xs ${textSecondaryClass}`}>{call.callDate} at {call.callTime}</div>
+                        </div>
+                        <div className={`text-sm ${textClass}`}>{call.discussionSummary}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase">Participants</div>
-                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.numberOfParticipants}</div>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs font-medium text-gray-500 uppercase">Preferred Time Window</div>
-                  <div className="text-sm text-gray-900 mt-1">{training.scopingCall.preferredTimeWindow}</div>
-                </div>
-                {training.scopingCall.specialRequirements && (
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase">Special Requirements</div>
-                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.specialRequirements}</div>
-                  </div>
-                )}
-                {training.scopingCall.notes && (
-                  <div>
-                    <div className="text-xs font-medium text-gray-500 uppercase">Notes</div>
-                    <div className="text-sm text-gray-900 mt-1">{training.scopingCall.notes}</div>
+                ))}
+
+                {/* Scoping Call */}
+                {training?.scopingCallCompleted && (
+                  <div className={`${darkMode ? 'bg-green-900 bg-opacity-30' : 'bg-green-50'} border ${darkMode ? 'border-green-700' : 'border-green-200'} rounded-lg p-4`}>
+                    <div className="flex items-start gap-3">
+                      <FileText className="text-green-600 mt-1" size={20} />
+                      <div className="flex-1">
+                        <div className={`font-semibold ${textClass} mb-2`}>Scoping Call</div>
+                        <div className={`text-sm ${textClass}`}>
+                          <strong>Objectives:</strong> {training.scopingCall?.trainingObjectives}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {/* Additional Information (Optional) */}
           <div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 pb-2 border-b">Additional Information (Optional)</h3>
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Training Type
-                </label>
-                <select
-                  name="type"
-                  value={formData.type}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                >
-                  <option value="">Select type...</option>
-                  {trainingTypes.map(t => (
-                    <option key={t} value={t}>{t}</option>
-                  ))}
-                </select>
-              </div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Client Name *</label>
+            <input
+              type="text"
+              value={formData.clientName}
+              onChange={(e) => setFormData(prev => ({ ...prev, clientName: e.target.value }))}
+              disabled={isViewMode}
+              required
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Stage
-                </label>
-                <select
-                  name="stage"
-                  value={formData.stage}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                >
-                  {stages.map(s => (
-                    <option key={s.id} value={s.id}>{s.label}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Estimated Value ($)
-                </label>
-                <input
-                  type="number"
-                  name="value"
-                  value={formData.value}
-                  onChange={handleChange}
-                  disabled={isViewMode}
-                  placeholder="0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-                />
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Target Delivery Date
-              </label>
-              <input
-                type="date"
-                name="deliveryDate"
-                value={formData.deliveryDate}
-                onChange={handleChange}
-                disabled={isViewMode}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Description
-              </label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleChange}
-                disabled={isViewMode}
-                rows="2"
-                placeholder="Additional context about the training request"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
-              />
-            </div>
-
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Internal Notes
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Contact Name *</label>
+              <input
+                type="text"
+                value={formData.contactName}
+                onChange={(e) => setFormData(prev => ({ ...prev, contactName: e.target.value }))}
                 disabled={isViewMode}
-                rows="2"
-                placeholder="Private notes for internal use"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50"
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Contact Email *</label>
+              <input
+                type="email"
+                value={formData.contactEmail}
+                onChange={(e) => setFormData(prev => ({ ...prev, contactEmail: e.target.value }))}
+                disabled={isViewMode}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
               />
             </div>
           </div>
 
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Training Title *</label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+              disabled={isViewMode}
+              required
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Topic Requests *</label>
+            <textarea
+              value={formData.topicRequests}
+              onChange={(e) => setFormData(prev => ({ ...prev, topicRequests: e.target.value }))}
+              disabled={isViewMode}
+              required
+              rows="3"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Attendees *</label>
+              <input
+                type="number"
+                value={formData.attendees}
+                onChange={(e) => setFormData(prev => ({ ...prev, attendees: e.target.value }))}
+                disabled={isViewMode}
+                required
+                min="1"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Delivery Mode *</label>
+              <select
+                value={formData.deliveryMode}
+                onChange={(e) => setFormData(prev => ({ ...prev, deliveryMode: e.target.value }))}
+                disabled={isViewMode}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg disabled:bg-gray-100`}
+              >
+                <option value="">Select...</option>
+                {deliveryModes.map(mode => (
+                  <option key={mode} value={mode}>{mode}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition"
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
             >
               {isViewMode ? 'Close' : 'Cancel'}
             </button>
             {!isViewMode && (
               <button
-                onClick={handleSubmitClick}
+                onClick={() => onSubmit(formData)}
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
                 {type === 'new' ? 'Create Request' : 'Save Changes'}
