@@ -424,6 +424,103 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ---
 
+### User Story 8: SOW / Contract Document Management with Status Tracking
+**Prompt:**
+> "As a Training Manager or Administrator,
+> I want to upload or link the Statement of Work (SOW) or Contract and mark its current status,
+> so that the team can track whether the agreement has been sent, is awaiting signature, or has been fully executed.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - A training engagement exists, and the proposal phase is complete.
+>
+> **When:**
+> - I select "Add SOW / Contract" from the engagement record.
+>
+> **Then:**
+> - I can upload or link the document (Word, PDF, or SharePoint link).
+> - I am prompted to set the document Status as:
+>   - 🟡 Pending Client Signature, or
+>   - 🟢 Signed / Executed.
+> - The SOW/Contract record displays in the engagement's document list with the selected status."
+
+**Features Added:**
+- **"Add SOW / Contract" button** in Documents tab and pipeline table with FileCheck icon
+- **Dual Upload Method Selection:**
+  - Paste Link option with URL validation for cloud storage (SharePoint, Google Drive, Dropbox, Box)
+  - Upload File option with drag-and-drop interface (PDF, DOCX, DOC)
+- **Signature Status Tracking:**
+  - 🟡 **Pending Client Signature** - Document awaiting client execution
+  - 🟢 **Signed / Executed** - Fully executed contract
+  - Visual status badges with emoji indicators
+  - Status selection during upload with clear UI indicators
+- **Dedicated SOW/Contract Section** in Documents tab (separate from Proposals and Run of Show)
+- **Version Control System:**
+  - Version label field (required)
+  - Notes field for describing version details (optional)
+  - Automatic marking of current version (only one active at a time)
+  - Upload timestamp and user tracking
+  - All historical versions remain accessible with their status
+- **SOW/Contract Display:**
+  - Grouped by training engagement
+  - All versions shown in reverse chronological order
+  - Current version badge (amber)
+  - Status badges (green for signed, yellow for pending)
+  - File information (name, size, type for uploads)
+  - External link icon for cloud storage links
+  - Add new version button per training
+- **Action Button Integration:**
+  - FileCheck icon button in pipeline table actions column
+  - Quick access to add SOW/Contract from any training
+  - Color-coded amber theme for visual distinction
+- **File Upload Features:**
+  - File type validation (PDF, Word only - appropriate for contracts)
+  - File size limit (10MB)
+  - Visual file preview after selection
+  - Note: Demo only stores filename, not actual file content
+- **URL Validation:**
+  - Checks for valid URL format
+  - Validates against approved cloud storage domains
+  - Warning message for invalid URLs
+- **Visual Indicators:**
+  - Purpose statement banner explaining the feature
+  - Info banner explaining current version marking
+  - Color-coded SOW/Contract cards (amber theme)
+  - FileCheck icon differentiation from proposals and run of show
+  - Dual status badges (Current + Signature Status)
+
+<details>
+<summary>📸 View SOW / Contract Screenshots</summary>
+
+### SOW Upload Modal - Status Selection
+![SOW Status Selection](./screenshots/sow-status-selection.png)
+*Screenshot of the SOW modal showing the dual status options: Pending Client Signature (🟡) and Signed/Executed (🟢)*
+
+### SOW Upload Modal - Link Option
+![SOW Link Upload](./screenshots/sow-link-upload.png)
+*Screenshot of the SOW modal with link paste option selected*
+
+### SOW Upload Modal - File Option
+![SOW File Upload](./screenshots/sow-file-upload.png)
+*Screenshot of the SOW modal with file upload option selected*
+
+### Documents Tab - SOW/Contract Section
+![SOW Section](./screenshots/sow-section.png)
+*Screenshot of the Documents tab showing the SOW/Contract section with status badges*
+
+### SOW Version History with Status
+![SOW Versions](./screenshots/sow-versions.png)
+*Screenshot showing multiple versions of a SOW with different statuses (pending and signed) and current version highlighted*
+
+### Pipeline Table - SOW Action Button
+![SOW Action Button](./screenshots/sow-action-button.png)
+*Screenshot showing the FileCheck icon button in the pipeline table actions*
+
+</details>
+
+---
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -434,6 +531,7 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Email Communication Logging**: Maintain complete email correspondence history
 - **Proposal Document Management**: Version-controlled proposal documents with cloud storage integration
 - **Run of Show / Agenda Management**: Version-controlled training agendas and delivery schedules
+- **SOW / Contract Management**: Version-controlled contract documents with signature status tracking (Pending/Signed)
 - **Search & Filter**: Find trainings by client name, contact, or training title
 - **Stage-based Views**: Filter trainings by pipeline stage
 - **Analytics Dashboard**: View total pipeline value, active requests, and completed trainings
@@ -621,7 +719,33 @@ training-management-app/
       uploadedBy: "Current User"
     }
   ],
-  
+
+  // SOW / Contract Documents (Multiple Versions with Status)
+  sowDocuments: [
+    {
+      id: "SOW001",
+      fileName: "TechCorp_AI_Training_SOW.pdf",
+      linkUrl: null,
+      versionLabel: "Final SOW",
+      status: "Signed / Executed", // or "Pending Client Signature"
+      notes: "Signed by Sarah Johnson on 2/18/2025",
+      isCurrent: true,
+      uploadedAt: "2025-02-18T15:30:00Z",
+      uploadedBy: "Current User"
+    },
+    {
+      id: "SOW002",
+      fileName: null,
+      linkUrl: "https://sharepoint.com/contracts/techcorp-ai-sow-draft",
+      versionLabel: "Draft v1",
+      status: "Pending Client Signature",
+      notes: "Initial draft sent for review",
+      isCurrent: false,
+      uploadedAt: "2025-02-10T11:00:00Z",
+      uploadedBy: "Current User"
+    }
+  ],
+
   createdAt: "2025-01-15T10:30:00Z",
   updatedAt: "2025-02-20T14:45:00Z"
 }
@@ -710,6 +834,25 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
 8. Add optional notes describing key updates
 9. Click "Add Run of Show"
 10. Document is automatically marked as current version
+
+### Adding SOW / Contract Documents
+1. Navigate to "Documents" tab or click FileCheck icon in pipeline table
+2. Scroll to "Statement of Work / Contract" section (if on Documents tab)
+3. Click "Add SOW / Contract" button
+4. Choose upload method: Link or File
+5. **If using Link:**
+   - Paste cloud storage URL (SharePoint, Google Drive, etc.)
+6. **If using File:**
+   - Select PDF or Word (DOCX/DOC) file (max 10MB)
+   - Note: Demo only stores filename
+7. Enter version label (e.g., "Final SOW", "Draft v2.0", "Revised Contract")
+8. **Select Document Status:**
+   - Click 🟡 **Pending Client Signature** if awaiting client execution
+   - Click 🟢 **Signed / Executed** if contract is fully signed
+9. Add optional notes (e.g., "Signed by client on 2/18/2025", "Updated pricing terms")
+10. Click "Add SOW / Contract"
+11. Document is automatically marked as current version
+12. Status badge displays alongside version information
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
