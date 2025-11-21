@@ -593,6 +593,157 @@ const TrainingManagementApp = () => {
 
         {activeTab === 'documents' && (
           <div className="space-y-8">
+            {/* Current Design Documents Overview */}
+            <div>
+              <div className="mb-6">
+                <h2 className={`text-2xl font-bold ${textClass}`}>Current Design Documents</h2>
+                <p className={`text-sm ${textSecondaryClass} mt-1`}>Quick reference to all approved and current design documents across engagements</p>
+              </div>
+
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} overflow-hidden`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b ${borderClass}`}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Client / Training</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Document Type</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Title / Filename</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Last Updated</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Status</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${borderClass}`}>
+                      {(() => {
+                        // Collect all current documents from all trainings
+                        const currentDocs = [];
+
+                        trainings.forEach(training => {
+                          // Proposals
+                          const currentProposal = training.proposalDocuments?.find(doc => doc.isCurrent);
+                          if (currentProposal) {
+                            currentDocs.push({
+                              training,
+                              type: 'Proposal',
+                              typeColor: 'text-green-600',
+                              typeBg: 'bg-green-100 dark:bg-green-900',
+                              icon: <File size={16} className="text-green-600" />,
+                              doc: currentProposal
+                            });
+                          }
+
+                          // Run of Show
+                          const currentRunOfShow = training.runOfShowDocuments?.find(doc => doc.isCurrent);
+                          if (currentRunOfShow) {
+                            currentDocs.push({
+                              training,
+                              type: 'Run of Show',
+                              typeColor: 'text-blue-600',
+                              typeBg: 'bg-blue-100 dark:bg-blue-900',
+                              icon: <ClipboardList size={16} className="text-blue-600" />,
+                              doc: currentRunOfShow
+                            });
+                          }
+
+                          // SOW/Contract
+                          const currentSOW = training.sowDocuments?.find(doc => doc.isCurrent);
+                          if (currentSOW) {
+                            currentDocs.push({
+                              training,
+                              type: 'SOW / Contract',
+                              typeColor: 'text-amber-600',
+                              typeBg: 'bg-amber-100 dark:bg-amber-900',
+                              icon: <FileCheck size={16} className="text-amber-600" />,
+                              doc: currentSOW
+                            });
+                          }
+                        });
+
+                        // Sort by last updated date (most recent first)
+                        currentDocs.sort((a, b) => new Date(b.doc.uploadedAt) - new Date(a.doc.uploadedAt));
+
+                        if (currentDocs.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan="6" className={`px-6 py-12 text-center ${textSecondaryClass}`}>
+                                <FileText size={48} className={`mx-auto ${textSecondaryClass} mb-4 opacity-50`} />
+                                <p>No current design documents yet. Upload proposals, run of show, or SOW/contracts to see them here.</p>
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return currentDocs.map((item, index) => (
+                          <tr key={index} className={hoverClass}>
+                            <td className="px-6 py-4">
+                              <div className={`font-medium ${textClass}`}>{item.training.clientName}</div>
+                              <div className={`text-sm ${textSecondaryClass} line-clamp-1`}>{item.training.title}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                {item.icon}
+                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${item.typeBg} ${item.typeColor}`}>
+                                  {item.type}
+                                </span>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass} font-medium`}>
+                                {item.doc.fileName || item.doc.linkUrl?.split('/').pop() || 'Document'}
+                              </div>
+                              <div className={`text-xs ${textSecondaryClass}`}>
+                                {item.doc.versionLabel}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>
+                                {new Date(item.doc.uploadedAt).toLocaleDateString()}
+                              </div>
+                              <div className={`text-xs ${textSecondaryClass}`}>
+                                {new Date(item.doc.uploadedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-0.5 bg-blue-600 text-white text-xs rounded-full">Current Version</span>
+                                {item.doc.status === 'Signed / Executed' && (
+                                  <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full">🟢 Signed</span>
+                                )}
+                                {item.doc.status === 'Pending Client Signature' && (
+                                  <span className="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded-full">🟡 Pending</span>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              {item.doc.linkUrl ? (
+                                <a
+                                  href={item.doc.linkUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                >
+                                  <ExternalLink size={14} />
+                                  Open Link
+                                </a>
+                              ) : (
+                                <button
+                                  onClick={() => openModal('view', item.training)}
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm font-medium"
+                                >
+                                  <Eye size={14} />
+                                  View Details
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
             {/* Proposals Section */}
             <div>
               <div className="flex items-center justify-between mb-6">
