@@ -521,6 +521,87 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ---
 
+### User Story 9: View All Current Design Documents in Engagement Dashboard
+**Prompt:**
+> "As a Trainer or Training Manager,
+> I want to view the most current versions of the proposal, run of show, and SOW/contract in one place,
+> so that I can quickly reference the client's approved design and expectations.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - One or more design documents are stored.
+>
+> **When:**
+> - I open the "Design & Confirm Training Solution" or "Documents" tab of an engagement.
+>
+> **Then:**
+> - I see a list showing:
+>   - Document Type
+>   - Title / Filename
+>   - Last Updated Date
+>   - Link to open/download
+>   - "Current Version" indicator"
+
+**Features Added:**
+- **Current Design Documents Overview Section** - Positioned at the top of the Documents tab
+- **Consolidated Table View** displaying all current documents across all engagements:
+  - Client Name and Training Title
+  - Document Type with color-coded badges (Proposal, Run of Show, SOW/Contract)
+  - Title/Filename with version label
+  - Last Updated Date and Time
+  - Status indicators (Current Version + Signature Status for SOW)
+  - Action buttons (Open Link or View Details)
+- **Smart Document Collection System:**
+  - Automatically finds current version (isCurrent: true) from each document type
+  - Aggregates proposals, run of show, and SOW/contracts across all training engagements
+  - Sorts by most recently updated (newest first)
+  - Empty state when no documents exist
+- **Color-Coded Document Type Badges:**
+  - Green badge for Proposals with File icon
+  - Blue badge for Run of Show with ClipboardList icon
+  - Amber badge for SOW/Contract with FileCheck icon
+- **Status Indicators:**
+  - "Current Version" badge displayed for all documents
+  - "🟢 Signed" or "🟡 Pending" badges for SOW documents with signature status
+- **Quick Access Actions:**
+  - "Open Link" button for cloud storage documents (opens in new tab)
+  - "View Details" button for file uploads (opens training details modal)
+  - External link icon and Eye icon for visual clarity
+- **Responsive Table Design:**
+  - Clean, organized layout with all key information
+  - Hover effects for better interactivity
+  - Dark mode support
+  - Scrollable on smaller screens
+- **One-Stop Reference Dashboard:**
+  - No need to scroll through individual document sections
+  - See all approved design documents at a glance
+  - Quickly identify which clients have which documents ready
+  - Track most recently updated documents
+
+<details>
+<summary>📸 View Current Design Documents Screenshots</summary>
+
+### Current Design Documents Dashboard
+![Current Documents Dashboard](./screenshots/current-documents-dashboard.png)
+*Screenshot of the consolidated current design documents table showing proposals, run of show, and SOW documents across multiple engagements*
+
+### Current Documents with Status Badges
+![Documents with Status](./screenshots/current-documents-status-badges.png)
+*Screenshot showing the various status badges including "Current Version", "🟢 Signed", and "🟡 Pending"*
+
+### Current Documents - Empty State
+![Empty State](./screenshots/current-documents-empty-state.png)
+*Screenshot showing the empty state when no current documents exist*
+
+### Current Documents - Dark Mode
+![Dark Mode View](./screenshots/current-documents-dark-mode.png)
+*Screenshot of the current design documents dashboard in dark mode*
+
+</details>
+
+---
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -532,6 +613,7 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Proposal Document Management**: Version-controlled proposal documents with cloud storage integration
 - **Run of Show / Agenda Management**: Version-controlled training agendas and delivery schedules
 - **SOW / Contract Management**: Version-controlled contract documents with signature status tracking (Pending/Signed)
+- **Current Design Documents Dashboard**: Consolidated view of all current design documents across engagements
 - **Search & Filter**: Find trainings by client name, contact, or training title
 - **Stage-based Views**: Filter trainings by pipeline stage
 - **Analytics Dashboard**: View total pipeline value, active requests, and completed trainings
@@ -853,6 +935,20 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
 10. Click "Add SOW / Contract"
 11. Document is automatically marked as current version
 12. Status badge displays alongside version information
+
+### Viewing Current Design Documents Dashboard
+1. Navigate to "Documents" tab
+2. View the "Current Design Documents" section at the top
+3. See consolidated table showing all current documents:
+   - **Client/Training**: Client name and training title
+   - **Document Type**: Color-coded badges (Green=Proposal, Blue=Run of Show, Amber=SOW)
+   - **Title/Filename**: Document name and version label
+   - **Last Updated**: Date and time of last update
+   - **Status**: Current Version + Signature Status (for SOW documents)
+   - **Action**: Open Link or View Details button
+4. Documents are sorted by most recently updated (newest first)
+5. Click "Open Link" to access cloud storage documents in a new tab
+6. Click "View Details" to open the training engagement details
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
