@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon, MessageSquare, Inbox, Paperclip, Upload, ExternalLink, File, ClipboardList } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon, MessageSquare, Inbox, Paperclip, Upload, ExternalLink, File, ClipboardList, FileCheck } from 'lucide-react';
 
 // Storage adapter
 const storage = {
@@ -214,6 +214,30 @@ const TrainingManagementApp = () => {
           uploadedBy: 'Lisa Thompson'
         }
       ],
+      sowDocuments: [
+        {
+          id: 'SOW001',
+          fileName: 'TechCorp_AI_Training_SOW.pdf',
+          linkUrl: null,
+          versionLabel: 'Final SOW',
+          status: 'Signed / Executed',
+          notes: 'Signed by Sarah Johnson on 2/18/2025',
+          isCurrent: true,
+          uploadedAt: '2025-02-18T15:30:00Z',
+          uploadedBy: 'Mike Chen'
+        },
+        {
+          id: 'SOW002',
+          fileName: null,
+          linkUrl: 'https://sharepoint.com/contracts/techcorp-ai-sow-draft',
+          versionLabel: 'Draft v1',
+          status: 'Pending Client Signature',
+          notes: 'Initial draft sent for review',
+          isCurrent: false,
+          uploadedAt: '2025-02-10T11:00:00Z',
+          uploadedBy: 'Mike Chen'
+        }
+      ],
       createdAt: '2025-01-20T10:30:00Z',
       updatedAt: '2025-02-22T16:45:00Z'
     }];
@@ -322,9 +346,24 @@ const TrainingManagementApp = () => {
       const updatedDocs = existingDocs.map(d => ({ ...d, isCurrent: false }));
       const training = {
         ...selectedItem,
-        runOfShowDocuments: [...updatedDocs, { 
-          ...formData, 
-          id: `ROS${Date.now()}`, 
+        runOfShowDocuments: [...updatedDocs, {
+          ...formData,
+          id: `ROS${Date.now()}`,
+          isCurrent: true,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: 'Current User'
+        }],
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
+    } else if (modalType === 'sow') {
+      const existingDocs = selectedItem.sowDocuments || [];
+      const updatedDocs = existingDocs.map(d => ({ ...d, isCurrent: false }));
+      const training = {
+        ...selectedItem,
+        sowDocuments: [...updatedDocs, {
+          ...formData,
+          id: `SOW${Date.now()}`,
           isCurrent: true,
           uploadedAt: new Date().toISOString(),
           uploadedBy: 'Current User'
@@ -514,13 +553,16 @@ const TrainingManagementApp = () => {
                               <button onClick={() => openModal('scoping', training)} className={`p-1 ${textSecondaryClass} hover:text-green-600 transition`} title="Record scoping call">
                                 <FileText size={18} />
                               </button>
-                              <button 
-                                onClick={() => openModal('coordination', training)} 
+                              <button
+                                onClick={() => openModal('coordination', training)}
                                 disabled={!training.scopingCallCompleted}
                                 className={`p-1 ${training.scopingCallCompleted ? `${textSecondaryClass} hover:text-blue-600` : 'text-gray-300 cursor-not-allowed'} transition`}
                                 title={training.scopingCallCompleted ? "Record coordination call" : "Complete scoping call first"}
                               >
                                 <MessageSquare size={18} />
+                              </button>
+                              <button onClick={() => openModal('sow', training)} className={`p-1 ${textSecondaryClass} hover:text-amber-600 transition`} title="Add SOW / Contract">
+                                <FileCheck size={18} />
                               </button>
                               <button onClick={() => openModal('view', training)} className={`p-1 ${textSecondaryClass} hover:text-blue-600 transition`} title="View details">
                                 <Eye size={18} />
@@ -698,6 +740,87 @@ const TrainingManagementApp = () => {
                 )}
               </div>
             </div>
+
+            {/* SOW / Contract Section */}
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className={`text-xl font-bold ${textClass}`}>Statement of Work / Contract</h2>
+                  <p className={`text-sm ${textSecondaryClass} mt-1`}>SOW and contract documents with signature status tracking</p>
+                </div>
+                <button
+                  onClick={() => {
+                    const training = trainings[0];
+                    if (training) openModal('sow', training);
+                  }}
+                  className="flex items-center gap-2 bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition"
+                >
+                  <FileCheck size={20} />
+                  Add SOW / Contract
+                </button>
+              </div>
+
+              <div className="grid gap-4">
+                {trainings.map(training => (
+                  training.sowDocuments?.length > 0 && (
+                    <div key={training.id} className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                      <h3 className={`font-semibold ${textClass} mb-4`}>{training.clientName} - {training.title}</h3>
+                      <div className="space-y-3">
+                        {training.sowDocuments.map(doc => (
+                          <div key={doc.id} className={`flex items-start gap-4 p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                            <FileCheck className="text-amber-600 mt-1" size={24} />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className={`font-medium ${textClass}`}>{doc.fileName || doc.linkUrl}</span>
+                                {doc.isCurrent && (
+                                  <span className="px-2 py-0.5 bg-amber-600 text-white text-xs rounded-full">Current</span>
+                                )}
+                                {doc.status === 'Signed / Executed' && (
+                                  <span className="px-2 py-0.5 bg-green-600 text-white text-xs rounded-full">🟢 Signed / Executed</span>
+                                )}
+                                {doc.status === 'Pending Client Signature' && (
+                                  <span className="px-2 py-0.5 bg-yellow-600 text-white text-xs rounded-full">🟡 Pending Client Signature</span>
+                                )}
+                              </div>
+                              <div className={`text-sm ${textSecondaryClass} space-y-1`}>
+                                <div>Version: {doc.versionLabel}</div>
+                                <div>Status: {doc.status}</div>
+                                <div>Uploaded by {doc.uploadedBy} on {new Date(doc.uploadedAt).toLocaleString()}</div>
+                                {doc.notes && <div className="italic">Notes: {doc.notes}</div>}
+                              </div>
+                              {doc.linkUrl && (
+                                <a
+                                  href={doc.linkUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm mt-2"
+                                >
+                                  <ExternalLink size={14} />
+                                  Open Link
+                                </a>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => openModal('sow', training)}
+                              className={`p-2 ${textSecondaryClass} hover:text-amber-600 transition`}
+                              title="Add new version"
+                            >
+                              <Upload size={18} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                ))}
+                {!trainings.some(t => t.sowDocuments?.length > 0) && (
+                  <div className={`${cardBgClass} rounded-lg border ${borderClass} p-12 text-center`}>
+                    <FileCheck size={48} className={`mx-auto ${textSecondaryClass} mb-4`} />
+                    <p className={textSecondaryClass}>No SOW / contract documents yet. Add SOW/contracts to training engagements.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -740,6 +863,8 @@ const TrainingManagementApp = () => {
         <>
           {modalType === 'runofshow' ? (
             <RunOfShowModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : modalType === 'sow' ? (
+            <SOWModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'proposal' ? (
             <ProposalModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'email' ? (
@@ -975,6 +1100,267 @@ const RunOfShowModal = ({ training, darkMode, onClose, onSubmit }) => {
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               Add Run of Show
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SOWModal = ({ training, darkMode, onClose, onSubmit }) => {
+  const [uploadType, setUploadType] = useState('link');
+  const [formData, setFormData] = useState({
+    fileName: '',
+    linkUrl: '',
+    versionLabel: '',
+    status: 'Pending Client Signature',
+    notes: ''
+  });
+
+  const [fileInfo, setFileInfo] = useState(null);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const allowedTypes = ['.pdf', '.docx', '.doc'];
+      const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+
+      if (!allowedTypes.includes(fileExt)) {
+        alert('Only PDF and Word (DOCX/DOC) files are allowed');
+        e.target.value = '';
+        return;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        e.target.value = '';
+        return;
+      }
+
+      setFileInfo({
+        name: file.name,
+        size: (file.size / 1024 / 1024).toFixed(2) + ' MB',
+        type: file.type
+      });
+      setFormData(prev => ({ ...prev, fileName: file.name }));
+    }
+  };
+
+  const validateUrl = (url) => {
+    try {
+      new URL(url);
+      return url.includes('sharepoint.com') || url.includes('drive.google.com') || url.includes('dropbox.com') || url.includes('box.com');
+    } catch {
+      return false;
+    }
+  };
+
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${bgClass} rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <div className="flex items-center gap-3">
+            <FileCheck className="text-amber-600" size={24} />
+            <div>
+              <h2 className={`text-xl font-bold ${textClass}`}>Add SOW / Contract</h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>{training?.clientName} - {training?.title}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className={`${darkMode ? 'bg-amber-900 border-amber-700' : 'bg-amber-50 border-amber-200'} border rounded-lg p-4`}>
+            <p className={`text-sm ${darkMode ? 'text-amber-100' : 'text-amber-900'}`}>
+              <strong>Purpose:</strong> Upload or link the Statement of Work (SOW) or Contract and track its signature status. Only one document can be marked as the current version.
+            </p>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-3`}>Upload Method</label>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setUploadType('link')}
+                className={`flex-1 p-4 rounded-lg border-2 transition ${
+                  uploadType === 'link'
+                    ? 'border-amber-600 bg-amber-50 dark:bg-amber-900'
+                    : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                }`}
+              >
+                <ExternalLink className={uploadType === 'link' ? 'text-amber-600' : textSecondaryClass} size={24} />
+                <div className={`font-medium ${textClass} mt-2`}>Paste Link</div>
+                <div className={`text-xs ${textSecondaryClass} mt-1`}>SharePoint, Google Drive, etc.</div>
+              </button>
+              <button
+                onClick={() => setUploadType('file')}
+                className={`flex-1 p-4 rounded-lg border-2 transition ${
+                  uploadType === 'file'
+                    ? 'border-amber-600 bg-amber-50 dark:bg-amber-900'
+                    : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                }`}
+              >
+                <Upload className={uploadType === 'file' ? 'text-amber-600' : textSecondaryClass} size={24} />
+                <div className={`font-medium ${textClass} mt-2`}>Upload File</div>
+                <div className={`text-xs ${textSecondaryClass} mt-1`}>PDF, Word</div>
+              </button>
+            </div>
+          </div>
+
+          {uploadType === 'link' && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Document Link *</label>
+              <input
+                type="url"
+                value={formData.linkUrl}
+                onChange={(e) => setFormData(prev => ({ ...prev, linkUrl: e.target.value }))}
+                required
+                placeholder="https://sharepoint.com/... or https://drive.google.com/..."
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-amber-500`}
+              />
+              <p className={`text-xs ${textSecondaryClass} mt-1`}>
+                Paste a link to SharePoint, Google Drive, Dropbox, or Box
+              </p>
+              {formData.linkUrl && !validateUrl(formData.linkUrl) && (
+                <p className="text-xs text-red-600 mt-1">⚠️ Please provide a valid SharePoint or cloud storage link</p>
+              )}
+            </div>
+          )}
+
+          {uploadType === 'file' && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>Upload File *</label>
+              <div className={`border-2 border-dashed ${inputBorderClass} rounded-lg p-6 text-center`}>
+                <FileCheck className={`mx-auto ${textSecondaryClass} mb-2`} size={32} />
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.doc"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="sow-upload"
+                />
+                <label
+                  htmlFor="sow-upload"
+                  className={`cursor-pointer text-sm ${textClass} hover:text-amber-600 transition`}
+                >
+                  Click to upload or drag and drop
+                </label>
+                <p className={`text-xs ${textSecondaryClass} mt-1`}>
+                  PDF or Word (DOCX/DOC) - max 10MB
+                </p>
+              </div>
+              {fileInfo && (
+                <div className={`mt-3 p-3 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                  <div className="flex items-center gap-2">
+                    <FileCheck className="text-amber-600" size={20} />
+                    <div className="flex-1">
+                      <div className={`text-sm font-medium ${textClass}`}>{fileInfo.name}</div>
+                      <div className={`text-xs ${textSecondaryClass}`}>{fileInfo.size}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <p className={`text-xs ${textSecondaryClass} mt-2`}>
+                Note: In this demo, file content is not actually uploaded. Only the filename is stored.
+              </p>
+            </div>
+          )}
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Version Label *</label>
+            <input
+              type="text"
+              value={formData.versionLabel}
+              onChange={(e) => setFormData(prev => ({ ...prev, versionLabel: e.target.value }))}
+              required
+              placeholder="e.g., Final SOW, Draft v2.0, Revised Contract"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-amber-500`}
+            />
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Document Status *</label>
+            <div className="flex gap-4">
+              <button
+                onClick={() => setFormData(prev => ({ ...prev, status: 'Pending Client Signature' }))}
+                className={`flex-1 p-4 rounded-lg border-2 transition ${
+                  formData.status === 'Pending Client Signature'
+                    ? 'border-yellow-600 bg-yellow-50 dark:bg-yellow-900'
+                    : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                }`}
+              >
+                <div className={`text-2xl mb-2`}>🟡</div>
+                <div className={`font-medium ${textClass} text-sm`}>Pending Client Signature</div>
+                <div className={`text-xs ${textSecondaryClass} mt-1`}>Awaiting client to sign</div>
+              </button>
+              <button
+                onClick={() => setFormData(prev => ({ ...prev, status: 'Signed / Executed' }))}
+                className={`flex-1 p-4 rounded-lg border-2 transition ${
+                  formData.status === 'Signed / Executed'
+                    ? 'border-green-600 bg-green-50 dark:bg-green-900'
+                    : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                }`}
+              >
+                <div className={`text-2xl mb-2`}>🟢</div>
+                <div className={`font-medium ${textClass} text-sm`}>Signed / Executed</div>
+                <div className={`text-xs ${textSecondaryClass} mt-1`}>Fully executed contract</div>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>Notes / Key Updates</label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+              rows="3"
+              placeholder="Add notes about this version (e.g., 'Signed by client on 2/18/2025', 'Updated pricing terms', 'Pending legal review')..."
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-amber-500`}
+            />
+          </div>
+
+          <div className={`${darkMode ? 'bg-yellow-900 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-3`}>
+            <p className={`text-sm ${darkMode ? 'text-yellow-100' : 'text-yellow-900'}`}>
+              ℹ️ This SOW/Contract will be marked as the <strong>current version</strong>. Previous versions will remain accessible but will no longer be marked as current.
+            </p>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (uploadType === 'link' && !validateUrl(formData.linkUrl)) {
+                  alert('Please provide a valid cloud storage link');
+                  return;
+                }
+                if (uploadType === 'file' && !formData.fileName) {
+                  alert('Please select a file to upload');
+                  return;
+                }
+                if (!formData.versionLabel) {
+                  alert('Please provide a version label');
+                  return;
+                }
+                if (!formData.status) {
+                  alert('Please select a document status');
+                  return;
+                }
+                onSubmit(formData);
+              }}
+              className="flex-1 px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition"
+            >
+              Add SOW / Contract
             </button>
           </div>
         </div>
