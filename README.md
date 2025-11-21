@@ -349,6 +349,81 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ---
 
+### User Story 7: Run of Show / Agenda Management
+**Prompt:**
+> "As a Training Manager, I want to upload or link the current version of the Run of Show or Agenda, so that trainers and stakeholders can see what will happen during the delivery.
+> 
+> **Acceptance Criteria:**
+> 
+> **Given:**
+> - A training request exists in the system.
+> 
+> **When:**
+> - I choose "Add Run of Show" under the engagement's document section.
+> 
+> **Then:**
+> - I can upload or link an Excel/Word/PDF file
+> - I can add a note describing key updates
+> - The document is marked as the current version
+> - Trainers and stakeholders can access the current agenda"
+
+**Features Added:**
+- **"Add Run of Show" button** in Documents tab with ClipboardList icon
+- **Dual Upload Method Selection:**
+  - Paste Link option with URL validation for cloud storage (SharePoint, Google Drive, Dropbox, Box)
+  - Upload File option with drag-and-drop interface (PDF, DOCX, DOC, XLSX, XLS)
+- **Dedicated Run of Show Section** in Documents tab (separate from Proposals)
+- **Version Control System:**
+  - Version label field (required)
+  - Notes field for describing key updates (optional)
+  - Automatic marking of current version (only one active at a time)
+  - Upload timestamp and user tracking
+  - All historical versions remain accessible
+- **Run of Show Display:**
+  - Grouped by training engagement
+  - All versions shown in reverse chronological order
+  - Current version badge (blue)
+  - File information (name, size, type for uploads)
+  - External link icon for cloud storage links
+  - Add new version button per training
+- **File Upload Features:**
+  - File type validation (PDF, Word, Excel only)
+  - File size limit (10MB)
+  - Visual file preview after selection
+  - Note: Demo only stores filename, not actual file content
+- **URL Validation:**
+  - Checks for valid URL format
+  - Validates against approved cloud storage domains
+  - Warning message for invalid URLs
+- **Visual Indicators:**
+  - Purpose statement banner explaining the feature
+  - Info banner explaining current version marking
+  - Color-coded run of show cards (blue theme)
+  - ClipboardList icon differentiation from proposals
+
+<details>
+<summary>📸 View Run of Show Screenshots</summary>
+
+### Run of Show Upload Modal - Link Option
+![Run of Show Link Upload](./screenshots/runofshow-link-upload.png)
+*Add screenshot of the run of show modal with link paste option selected*
+
+### Run of Show Upload Modal - File Option
+![Run of Show File Upload](./screenshots/runofshow-file-upload.png)
+*Add screenshot of the run of show modal with file upload option selected*
+
+### Documents Tab - Run of Show Section
+![Run of Show Section](./screenshots/runofshow-section.png)
+*Add screenshot of the Documents tab showing the Run of Show section with multiple versions*
+
+### Run of Show Version History
+![Run of Show Versions](./screenshots/runofshow-versions.png)
+*Add screenshot showing multiple versions of a run of show with current version highlighted*
+
+</details>
+
+---
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -358,6 +433,7 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Coordination Call Tracking**: Log follow-up calls with clients to capture updates and changes
 - **Email Communication Logging**: Maintain complete email correspondence history
 - **Proposal Document Management**: Version-controlled proposal documents with cloud storage integration
+- **Run of Show / Agenda Management**: Version-controlled training agendas and delivery schedules
 - **Search & Filter**: Find trainings by client name, contact, or training title
 - **Stage-based Views**: Filter trainings by pipeline stage
 - **Analytics Dashboard**: View total pipeline value, active requests, and completed trainings
@@ -522,6 +598,30 @@ training-management-app/
     }
   ],
   
+  // Run of Show Documents (Multiple Versions)
+  runOfShowDocuments: [
+    {
+      id: "ROS001",
+      fileName: null,
+      linkUrl: "https://sharepoint.com/agendas/final",
+      versionLabel: "Final Agenda",
+      notes: "Updated with fintech case studies in afternoon session",
+      isCurrent: true,
+      uploadedAt: "2025-03-10T09:00:00Z",
+      uploadedBy: "Current User"
+    },
+    {
+      id: "ROS002",
+      fileName: "AI_Training_Agenda_Draft.xlsx",
+      linkUrl: null,
+      versionLabel: "Draft v1",
+      notes: "Initial two-day agenda",
+      isCurrent: false,
+      uploadedAt: "2025-03-01T14:30:00Z",
+      uploadedBy: "Current User"
+    }
+  ],
+  
   createdAt: "2025-01-15T10:30:00Z",
   updatedAt: "2025-02-20T14:45:00Z"
 }
@@ -595,6 +695,21 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
 6. Add optional notes about this version
 7. Click "Add Proposal Document"
 8. Document is automatically marked as current version
+
+### Adding Run of Show / Agenda
+1. Navigate to "Documents" tab
+2. Scroll to "Run of Show / Agenda" section
+3. Click "Add Run of Show" button
+4. Choose upload method: Link or File
+5. **If using Link:**
+   - Paste cloud storage URL (SharePoint, Google Drive, etc.)
+6. **If using File:**
+   - Select PDF, Word (DOCX/DOC), or Excel (XLSX/XLS) file (max 10MB)
+   - Note: Demo only stores filename
+7. Enter version label (e.g., "Final Agenda", "Day 1 Schedule")
+8. Add optional notes describing key updates
+9. Click "Add Run of Show"
+10. Document is automatically marked as current version
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
