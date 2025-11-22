@@ -602,6 +602,87 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ---
 
+### User Story 10: Proposal-to-Contract Conversion Tracking Analytics
+**Prompt:**
+> "As an Administrator or Business Lead,
+> I want to track how many proposals result in signed contracts,
+> so that I can measure conversion performance and forecast revenue potential.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - Proposals and signed SOWs are stored across engagements.
+>
+> **When:**
+> - I view the analytics or dashboard screen.
+>
+> **Then:**
+> - I see:
+>   - Number of proposals sent
+>   - Number of contracts signed
+>   - Conversion rate (%)"
+
+**Features Added:**
+- **Proposal to Contract Conversion Section** - New dedicated section in Analytics tab
+- **Three New Analytics Cards:**
+  - **Proposals Sent** - Count of engagements that have at least one proposal document
+  - **Contracts Signed** - Count of engagements with fully executed SOWs (status = "Signed / Executed")
+  - **Conversion Rate** - Percentage showing proposal-to-contract success rate
+- **Smart Calculation Logic:**
+  - Proposals Sent: Counts trainings with `proposalDocuments.length > 0`
+  - Contracts Signed: Counts trainings where SOW has `status === 'Signed / Executed'`
+  - Conversion Rate: `(Contracts Signed / Proposals Sent) × 100`
+  - Handles edge cases (displays 0% when no proposals exist)
+  - Shows breakdown text (e.g., "2 of 3 proposals")
+- **Color-Coded Status Indicators:**
+  - **Green TrendingUp icon** (≥50%): Strong conversion performance
+  - **Yellow TrendingUp icon** (≥25%): Moderate conversion performance
+  - **Red TrendingUp icon** (<25%): Needs improvement
+  - Dynamic color coding helps identify performance at a glance
+- **Card Design:**
+  - Proposals Sent: File icon in green
+  - Contracts Signed: FileCheck icon in amber
+  - Conversion Rate: TrendingUp icon with dynamic color
+  - Descriptive subtext under each metric
+  - Consistent styling with existing analytics cards
+- **Business Value Metrics:**
+  - Track proposal success rates over time
+  - Measure sales/business development performance
+  - Forecast revenue potential based on conversion trends
+  - Identify opportunities for sales process improvement
+- **Visual Organization:**
+  - Separated from general metrics with clear heading
+  - Three-column grid layout matching existing analytics
+  - Dark mode support
+  - Responsive design
+
+<details>
+<summary>📸 View Conversion Analytics Screenshots</summary>
+
+### Conversion Analytics Cards
+![Conversion Analytics](./screenshots/conversion-analytics-cards.png)
+*Screenshot showing the three conversion analytics cards: Proposals Sent, Contracts Signed, and Conversion Rate*
+
+### Conversion Rate - Strong Performance
+![Strong Conversion](./screenshots/conversion-rate-green.png)
+*Screenshot showing conversion rate with green indicator (≥50%)*
+
+### Conversion Rate - Moderate Performance
+![Moderate Conversion](./screenshots/conversion-rate-yellow.png)
+*Screenshot showing conversion rate with yellow indicator (25-49%)*
+
+### Conversion Rate - Needs Improvement
+![Low Conversion](./screenshots/conversion-rate-red.png)
+*Screenshot showing conversion rate with red indicator (<25%)*
+
+### Analytics Tab - Full View
+![Analytics Full View](./screenshots/analytics-full-view.png)
+*Screenshot of the complete Analytics tab showing both general metrics and conversion tracking*
+
+</details>
+
+---
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -614,9 +695,10 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Run of Show / Agenda Management**: Version-controlled training agendas and delivery schedules
 - **SOW / Contract Management**: Version-controlled contract documents with signature status tracking (Pending/Signed)
 - **Current Design Documents Dashboard**: Consolidated view of all current design documents across engagements
+- **Conversion Analytics**: Track proposal-to-contract conversion rates and business performance metrics
 - **Search & Filter**: Find trainings by client name, contact, or training title
 - **Stage-based Views**: Filter trainings by pipeline stage
-- **Analytics Dashboard**: View total pipeline value, active requests, and completed trainings
+- **Analytics Dashboard**: View total pipeline value, active requests, completed trainings, and conversion metrics
 
 ### User Interface
 - **Light/Dark Mode**: Toggle between themes with persistent preference
@@ -949,6 +1031,24 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
 4. Documents are sorted by most recently updated (newest first)
 5. Click "Open Link" to access cloud storage documents in a new tab
 6. Click "View Details" to open the training engagement details
+
+### Viewing Conversion Analytics
+1. Navigate to "Analytics" tab
+2. View the "Proposal to Contract Conversion" section
+3. See three analytics cards:
+   - **Proposals Sent**: Number of engagements with proposals
+   - **Contracts Signed**: Number of fully executed SOWs
+   - **Conversion Rate**: Success rate percentage with color indicator
+4. Conversion rate color coding:
+   - **Green** (≥50%): Strong conversion performance
+   - **Yellow** (25-49%): Moderate conversion performance
+   - **Red** (<25%): Needs improvement
+5. View breakdown text showing ratio (e.g., "2 of 3 proposals")
+6. Use metrics to:
+   - Track proposal success rates
+   - Measure business development performance
+   - Forecast revenue potential
+   - Identify sales process improvements
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
