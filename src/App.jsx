@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon, MessageSquare, Inbox, Paperclip, Upload, ExternalLink, File, ClipboardList, FileCheck } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, Eye, Calendar, DollarSign, Users, CheckCircle, Phone, Mail, MapPin, Video, Building, FileText, Clock, Sun, Moon, MessageSquare, Inbox, Paperclip, Upload, ExternalLink, File, ClipboardList, FileCheck, TrendingUp } from 'lucide-react';
 
 // Storage adapter
 const storage = {
@@ -976,34 +976,101 @@ const TrainingManagementApp = () => {
         )}
 
         {activeTab === 'analytics' && (
-          <div className="grid grid-cols-3 gap-6">
-            <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className={`font-medium ${textClass}`}>Total Pipeline Value</h3>
-                <DollarSign className="text-green-600" size={24} />
+          <div className="space-y-6">
+            {/* General Metrics */}
+            <div className="grid grid-cols-3 gap-6">
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`font-medium ${textClass}`}>Total Pipeline Value</h3>
+                  <DollarSign className="text-green-600" size={24} />
+                </div>
+                <div className={`text-3xl font-bold ${textClass}`}>
+                  ${trainings.reduce((sum, t) => sum + (t.value || 0), 0).toLocaleString()}
+                </div>
               </div>
-              <div className={`text-3xl font-bold ${textClass}`}>
-                ${trainings.reduce((sum, t) => sum + (t.value || 0), 0).toLocaleString()}
+
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`font-medium ${textClass}`}>Active Requests</h3>
+                  <Users className="text-blue-600" size={24} />
+                </div>
+                <div className={`text-3xl font-bold ${textClass}`}>
+                  {trainings.filter(t => t.stage !== 'completed').length}
+                </div>
+              </div>
+
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className={`font-medium ${textClass}`}>Completed</h3>
+                  <CheckCircle className="text-green-600" size={24} />
+                </div>
+                <div className={`text-3xl font-bold ${textClass}`}>
+                  {trainings.filter(t => t.stage === 'completed').length}
+                </div>
               </div>
             </div>
-            
-            <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className={`font-medium ${textClass}`}>Active Requests</h3>
-                <Users className="text-blue-600" size={24} />
-              </div>
-              <div className={`text-3xl font-bold ${textClass}`}>
-                {trainings.filter(t => t.stage !== 'completed').length}
-              </div>
-            </div>
-            
-            <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className={`font-medium ${textClass}`}>Completed</h3>
-                <CheckCircle className="text-green-600" size={24} />
-              </div>
-              <div className={`text-3xl font-bold ${textClass}`}>
-                {trainings.filter(t => t.stage === 'completed').length}
+
+            {/* Conversion Metrics */}
+            <div>
+              <h2 className={`text-xl font-bold ${textClass} mb-4`}>Proposal to Contract Conversion</h2>
+              <div className="grid grid-cols-3 gap-6">
+                {(() => {
+                  // Calculate conversion metrics
+                  const proposalsSent = trainings.filter(t => t.proposalDocuments?.length > 0).length;
+                  const contractsSigned = trainings.filter(t =>
+                    t.sowDocuments?.some(doc => doc.status === 'Signed / Executed')
+                  ).length;
+                  const conversionRate = proposalsSent > 0
+                    ? ((contractsSigned / proposalsSent) * 100).toFixed(1)
+                    : 0;
+
+                  return (
+                    <>
+                      <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className={`font-medium ${textClass}`}>Proposals Sent</h3>
+                          <File className="text-green-600" size={24} />
+                        </div>
+                        <div className={`text-3xl font-bold ${textClass}`}>
+                          {proposalsSent}
+                        </div>
+                        <p className={`text-sm ${textSecondaryClass} mt-2`}>
+                          Engagements with proposals
+                        </p>
+                      </div>
+
+                      <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className={`font-medium ${textClass}`}>Contracts Signed</h3>
+                          <FileCheck className="text-amber-600" size={24} />
+                        </div>
+                        <div className={`text-3xl font-bold ${textClass}`}>
+                          {contractsSigned}
+                        </div>
+                        <p className={`text-sm ${textSecondaryClass} mt-2`}>
+                          SOWs fully executed
+                        </p>
+                      </div>
+
+                      <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className={`font-medium ${textClass}`}>Conversion Rate</h3>
+                          <TrendingUp className={
+                            conversionRate >= 50 ? 'text-green-600' :
+                            conversionRate >= 25 ? 'text-yellow-600' :
+                            'text-red-600'
+                          } size={24} />
+                        </div>
+                        <div className={`text-3xl font-bold ${textClass}`}>
+                          {conversionRate}%
+                        </div>
+                        <p className={`text-sm ${textSecondaryClass} mt-2`}>
+                          {proposalsSent > 0 ? `${contractsSigned} of ${proposalsSent} proposals` : 'No proposals yet'}
+                        </p>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
