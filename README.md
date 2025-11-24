@@ -591,6 +591,10 @@ This application was developed iteratively through conversation with Claude AI, 
 ![Analytics Full View](./screenshots/conversion-analytics.png)
 *Screenshot of the complete Analytics tab showing both general metrics and conversion tracking*
 
+### Add Session Modal
+![Add Session Modal](./screenshots/schedule-add-session-modal.png)
+*Screenshot of the Add Session modal showing all form fields for creating a new training session*
+
 </details>
 
 ---

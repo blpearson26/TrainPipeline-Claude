@@ -54,6 +54,7 @@ const TrainingManagementApp = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [trainings, setTrainings] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
+  const [scheduleView, setScheduleView] = useState('list'); // 'list' or 'calendar'
 
   useEffect(() => {
     loadData();
@@ -238,6 +239,36 @@ const TrainingManagementApp = () => {
           uploadedBy: 'Mike Chen'
         }
       ],
+      scheduledSessions: [
+        {
+          id: 'SESS001',
+          eventTitle: 'AI Fundamentals Training - Day 1',
+          startDate: '2025-03-20',
+          startTime: '08:30',
+          endDate: '2025-03-20',
+          endTime: '16:30',
+          deliveryMode: 'Hybrid',
+          location: 'TechCorp HQ, Conference Room A',
+          virtualLink: 'https://zoom.us/j/123456789',
+          instructor: 'Mike Chen',
+          facilitators: ['Lisa Thompson', 'John Davis'],
+          status: 'Confirmed'
+        },
+        {
+          id: 'SESS002',
+          eventTitle: 'AI Fundamentals Training - Day 2',
+          startDate: '2025-03-21',
+          startTime: '08:30',
+          endDate: '2025-03-21',
+          endTime: '16:30',
+          deliveryMode: 'Hybrid',
+          location: 'TechCorp HQ, Conference Room A',
+          virtualLink: 'https://zoom.us/j/123456789',
+          instructor: 'Mike Chen',
+          facilitators: ['Lisa Thompson'],
+          status: 'Confirmed'
+        }
+      ],
       createdAt: '2025-01-20T10:30:00Z',
       updatedAt: '2025-02-22T16:45:00Z'
     }];
@@ -371,6 +402,17 @@ const TrainingManagementApp = () => {
         updatedAt: new Date().toISOString()
       };
       await saveTraining(training);
+    } else if (modalType === 'schedule') {
+      const existingSessions = selectedItem.scheduledSessions || [];
+      const training = {
+        ...selectedItem,
+        scheduledSessions: [...existingSessions, {
+          ...formData,
+          id: `SESS${Date.now()}`
+        }],
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
     }
     closeModal();
   };
@@ -425,7 +467,7 @@ const TrainingManagementApp = () => {
           </div>
 
           <div className={`flex gap-4 mt-4 border-b ${borderClass}`}>
-            {['pipeline', 'documents', 'analytics'].map(tab => (
+            {['pipeline', 'documents', 'schedule', 'analytics'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -975,6 +1017,286 @@ const TrainingManagementApp = () => {
           </div>
         )}
 
+        {activeTab === 'schedule' && (
+          <div className="space-y-6">
+            {/* Header with View Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className={`text-2xl font-bold ${textClass}`}>Master Schedule</h2>
+                <p className={`text-sm ${textSecondaryClass} mt-1`}>View all scheduled training sessions</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex rounded-lg border ${borderClass} p-1">
+                  <button
+                    onClick={() => setScheduleView('list')}
+                    className={`px-4 py-2 rounded transition ${
+                      scheduleView === 'list'
+                        ? 'bg-blue-600 text-white'
+                        : `${textSecondaryClass} hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`
+                    }`}
+                  >
+                    List View
+                  </button>
+                  <button
+                    onClick={() => setScheduleView('calendar')}
+                    className={`px-4 py-2 rounded transition ${
+                      scheduleView === 'calendar'
+                        ? 'bg-blue-600 text-white'
+                        : `${textSecondaryClass} hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`
+                    }`}
+                  >
+                    Calendar View
+                  </button>
+                </div>
+                <button
+                  onClick={() => openModal('schedule', trainings[0])}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  <Plus size={20} />
+                  Add Session
+                </button>
+              </div>
+            </div>
+
+            {/* List View */}
+            {scheduleView === 'list' && (
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} overflow-hidden`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b ${borderClass}`}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Event / Course Title</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Client Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Date & Time</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Delivery Mode</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Location / Link</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Instructor</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${borderClass}`}>
+                      {(() => {
+                        // Collect all scheduled sessions from all trainings
+                        const allSessions = [];
+                        trainings.forEach(training => {
+                          if (training.scheduledSessions?.length > 0) {
+                            training.scheduledSessions.forEach(session => {
+                              allSessions.push({
+                                ...session,
+                                clientName: training.clientName,
+                                training: training
+                              });
+                            });
+                          }
+                        });
+
+                        // Sort by date and time
+                        allSessions.sort((a, b) => {
+                          const dateA = new Date(`${a.startDate}T${a.startTime}`);
+                          const dateB = new Date(`${b.startDate}T${b.startTime}`);
+                          return dateA - dateB;
+                        });
+
+                        if (allSessions.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan="7" className={`px-6 py-12 text-center ${textSecondaryClass}`}>
+                                <Calendar size={48} className={`mx-auto ${textSecondaryClass} mb-4 opacity-50`} />
+                                <p>No scheduled sessions yet. Click "Add Session" to schedule training.</p>
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return allSessions.map((session, index) => (
+                          <tr key={index} className={hoverClass}>
+                            <td className="px-6 py-4">
+                              <div className={`font-medium ${textClass}`}>{session.eventTitle}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>{session.clientName}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>
+                                {new Date(session.startDate).toLocaleDateString()}
+                              </div>
+                              <div className={`text-xs ${textSecondaryClass}`}>
+                                {session.startTime} – {session.endTime}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                session.deliveryMode === 'Virtual' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                session.deliveryMode === 'On-site' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                              }`}>
+                                {session.deliveryMode}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              {session.deliveryMode === 'Virtual' || session.deliveryMode === 'Hybrid' ? (
+                                <a
+                                  href={session.virtualLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm"
+                                >
+                                  <ExternalLink size={14} />
+                                  Join Meeting
+                                </a>
+                              ) : (
+                                <div className={`text-sm ${textClass} flex items-center gap-1`}>
+                                  <MapPin size={14} />
+                                  {session.location}
+                                </div>
+                              )}
+                              {session.deliveryMode === 'Hybrid' && (
+                                <div className={`text-xs ${textSecondaryClass} mt-1`}>{session.location}</div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>{session.instructor}</div>
+                              {session.facilitators?.length > 0 && (
+                                <div className={`text-xs ${textSecondaryClass}`}>
+                                  +{session.facilitators.length} facilitator{session.facilitators.length > 1 ? 's' : ''}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                session.status === 'Confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                session.status === 'Tentative' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                              }`}>
+                                {session.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Calendar View */}
+            {scheduleView === 'calendar' && (
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                {(() => {
+                  // Collect all sessions
+                  const allSessions = [];
+                  trainings.forEach(training => {
+                    if (training.scheduledSessions?.length > 0) {
+                      training.scheduledSessions.forEach(session => {
+                        allSessions.push({
+                          ...session,
+                          clientName: training.clientName
+                        });
+                      });
+                    }
+                  });
+
+                  if (allSessions.length === 0) {
+                    return (
+                      <div className="text-center py-12">
+                        <Calendar size={48} className={`mx-auto ${textSecondaryClass} mb-4 opacity-50`} />
+                        <p className={textSecondaryClass}>No scheduled sessions yet. Click "Add Session" to schedule training.</p>
+                      </div>
+                    );
+                  }
+
+                  // Group sessions by date
+                  const sessionsByDate = {};
+                  allSessions.forEach(session => {
+                    const date = session.startDate;
+                    if (!sessionsByDate[date]) {
+                      sessionsByDate[date] = [];
+                    }
+                    sessionsByDate[date].push(session);
+                  });
+
+                  // Sort dates
+                  const sortedDates = Object.keys(sessionsByDate).sort();
+
+                  return (
+                    <div className="space-y-6">
+                      <h3 className={`text-lg font-semibold ${textClass} mb-4`}>Upcoming Sessions</h3>
+                      {sortedDates.map(date => (
+                        <div key={date} className={`border ${borderClass} rounded-lg p-4`}>
+                          <div className="flex items-center gap-3 mb-4">
+                            <Calendar className="text-blue-600" size={24} />
+                            <div>
+                              <div className={`font-semibold ${textClass}`}>
+                                {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                              </div>
+                              <div className={`text-sm ${textSecondaryClass}`}>
+                                {sessionsByDate[date].length} session{sessionsByDate[date].length > 1 ? 's' : ''} scheduled
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-3">
+                            {sessionsByDate[date].map((session, idx) => (
+                              <div
+                                key={idx}
+                                className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className={`font-medium ${textClass} mb-1`}>
+                                      {session.clientName} – {session.eventTitle}
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <div className="flex items-center gap-1">
+                                        <Clock size={14} className={textSecondaryClass} />
+                                        <span className={textSecondaryClass}>
+                                          {session.startTime} – {session.endTime}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Users size={14} className={textSecondaryClass} />
+                                        <span className={textSecondaryClass}>{session.instructor}</span>
+                                      </div>
+                                      {(session.deliveryMode === 'Virtual' || session.deliveryMode === 'Hybrid') && (
+                                        <a
+                                          href={session.virtualLink}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700"
+                                        >
+                                          <Video size={14} />
+                                          Join
+                                        </a>
+                                      )}
+                                      {(session.deliveryMode === 'On-site' || session.deliveryMode === 'Hybrid') && (
+                                        <div className="flex items-center gap-1">
+                                          <MapPin size={14} className={textSecondaryClass} />
+                                          <span className={textSecondaryClass}>{session.location}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    session.status === 'Confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                    session.status === 'Tentative' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                  }`}>
+                                    {session.status}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === 'analytics' && (
           <div className="space-y-6">
             {/* General Metrics */}
@@ -1083,6 +1405,8 @@ const TrainingManagementApp = () => {
             <RunOfShowModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'sow' ? (
             <SOWModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : modalType === 'schedule' ? (
+            <ScheduleModal training={selectedItem} session={null} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'proposal' ? (
             <ProposalModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'email' ? (
@@ -1318,6 +1642,277 @@ const RunOfShowModal = ({ training, darkMode, onClose, onSubmit }) => {
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               Add Run of Show
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ScheduleModal = ({ training, session, darkMode, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    eventTitle: session?.eventTitle || '',
+    startDate: session?.startDate || '',
+    startTime: session?.startTime || '',
+    endDate: session?.endDate || '',
+    endTime: session?.endTime || '',
+    deliveryMode: session?.deliveryMode || 'Virtual',
+    location: session?.location || '',
+    virtualLink: session?.virtualLink || '',
+    instructor: session?.instructor || '',
+    facilitators: session?.facilitators?.join(', ') || '',
+    status: session?.status || 'Tentative'
+  });
+
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${bgClass} rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <div className="flex items-center gap-3">
+            <Calendar className="text-blue-600" size={24} />
+            <div>
+              <h2 className={`text-xl font-bold ${textClass}`}>
+                {session ? 'Edit Training Session' : 'Add New Training Session'}
+              </h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>
+                {training?.clientName} - {training?.title}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className={`${darkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4`}>
+            <p className={`text-sm ${darkMode ? 'text-blue-100' : 'text-blue-900'}`}>
+              <strong>Purpose:</strong> Schedule a training delivery session with all key details including dates, times, instructor, and logistics.
+            </p>
+          </div>
+
+          {/* Event Title */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Event / Course Title *
+            </label>
+            <input
+              type="text"
+              value={formData.eventTitle}
+              onChange={(e) => setFormData(prev => ({ ...prev, eventTitle: e.target.value }))}
+              required
+              placeholder="e.g., AI Fundamentals Training - Day 1"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          {/* Date and Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Start Date *
+              </label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Start Time *
+              </label>
+              <input
+                type="time"
+                value={formData.startTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                End Date *
+              </label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                End Time *
+              </label>
+              <input
+                type="time"
+                value={formData.endTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          </div>
+
+          {/* Delivery Mode */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Delivery Mode *
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {['Virtual', 'On-site', 'Hybrid'].map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setFormData(prev => ({ ...prev, deliveryMode: mode }))}
+                  className={`p-3 rounded-lg border-2 transition ${
+                    formData.deliveryMode === mode
+                      ? mode === 'Virtual' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900' :
+                        mode === 'On-site' ? 'border-green-600 bg-green-50 dark:bg-green-900' :
+                        'border-purple-600 bg-purple-50 dark:bg-purple-900'
+                      : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                  }`}
+                >
+                  <div className={`font-medium ${textClass} text-sm`}>{mode}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Location (for On-site and Hybrid) */}
+          {(formData.deliveryMode === 'On-site' || formData.deliveryMode === 'Hybrid') && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Location *
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                required
+                placeholder="e.g., TechCorp HQ, Conference Room A"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          )}
+
+          {/* Virtual Link (for Virtual and Hybrid) */}
+          {(formData.deliveryMode === 'Virtual' || formData.deliveryMode === 'Hybrid') && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Virtual Meeting Link *
+              </label>
+              <input
+                type="url"
+                value={formData.virtualLink}
+                onChange={(e) => setFormData(prev => ({ ...prev, virtualLink: e.target.value }))}
+                required
+                placeholder="https://zoom.us/j/123456789"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          )}
+
+          {/* Instructor */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Instructor *
+            </label>
+            <input
+              type="text"
+              value={formData.instructor}
+              onChange={(e) => setFormData(prev => ({ ...prev, instructor: e.target.value }))}
+              required
+              placeholder="Primary instructor name"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          {/* Facilitators */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Facilitators (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.facilitators}
+              onChange={(e) => setFormData(prev => ({ ...prev, facilitators: e.target.value }))}
+              placeholder="Comma-separated names (e.g., Lisa Thompson, John Davis)"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+            <p className={`text-xs ${textSecondaryClass} mt-1`}>
+              Enter multiple facilitators separated by commas
+            </p>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Status *
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {['Tentative', 'Confirmed', 'Completed'].map(status => (
+                <button
+                  key={status}
+                  onClick={() => setFormData(prev => ({ ...prev, status }))}
+                  className={`p-3 rounded-lg border-2 transition ${
+                    formData.status === status
+                      ? status === 'Confirmed' ? 'border-green-600 bg-green-50 dark:bg-green-900' :
+                        status === 'Tentative' ? 'border-yellow-600 bg-yellow-50 dark:bg-yellow-900' :
+                        'border-gray-600 bg-gray-50 dark:bg-gray-700'
+                      : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                  }`}
+                >
+                  <div className={`font-medium ${textClass} text-sm`}>{status}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (!formData.eventTitle || !formData.startDate || !formData.startTime ||
+                    !formData.endDate || !formData.endTime || !formData.instructor) {
+                  alert('Please fill in all required fields');
+                  return;
+                }
+                if ((formData.deliveryMode === 'On-site' || formData.deliveryMode === 'Hybrid') && !formData.location) {
+                  alert('Please provide a location for on-site or hybrid delivery');
+                  return;
+                }
+                if ((formData.deliveryMode === 'Virtual' || formData.deliveryMode === 'Hybrid') && !formData.virtualLink) {
+                  alert('Please provide a virtual meeting link');
+                  return;
+                }
+
+                const sessionData = {
+                  ...formData,
+                  facilitators: formData.facilitators.split(',').map(f => f.trim()).filter(f => f)
+                };
+
+                onSubmit(sessionData);
+              }}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              {session ? 'Update Session' : 'Add Session'}
             </button>
           </div>
         </div>
