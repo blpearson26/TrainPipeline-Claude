@@ -402,6 +402,17 @@ const TrainingManagementApp = () => {
         updatedAt: new Date().toISOString()
       };
       await saveTraining(training);
+    } else if (modalType === 'schedule') {
+      const existingSessions = selectedItem.scheduledSessions || [];
+      const training = {
+        ...selectedItem,
+        scheduledSessions: [...existingSessions, {
+          ...formData,
+          id: `SESS${Date.now()}`
+        }],
+        updatedAt: new Date().toISOString()
+      };
+      await saveTraining(training);
     }
     closeModal();
   };
@@ -1394,6 +1405,8 @@ const TrainingManagementApp = () => {
             <RunOfShowModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'sow' ? (
             <SOWModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
+          ) : modalType === 'schedule' ? (
+            <ScheduleModal training={selectedItem} session={null} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'proposal' ? (
             <ProposalModal training={selectedItem} darkMode={darkMode} onClose={closeModal} onSubmit={handleSubmit} />
           ) : modalType === 'email' ? (
@@ -1629,6 +1642,277 @@ const RunOfShowModal = ({ training, darkMode, onClose, onSubmit }) => {
               className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
             >
               Add Run of Show
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ScheduleModal = ({ training, session, darkMode, onClose, onSubmit }) => {
+  const [formData, setFormData] = useState({
+    eventTitle: session?.eventTitle || '',
+    startDate: session?.startDate || '',
+    startTime: session?.startTime || '',
+    endDate: session?.endDate || '',
+    endTime: session?.endTime || '',
+    deliveryMode: session?.deliveryMode || 'Virtual',
+    location: session?.location || '',
+    virtualLink: session?.virtualLink || '',
+    instructor: session?.instructor || '',
+    facilitators: session?.facilitators?.join(', ') || '',
+    status: session?.status || 'Tentative'
+  });
+
+  const bgClass = darkMode ? 'bg-gray-800' : 'bg-white';
+  const textClass = darkMode ? 'text-gray-100' : 'text-gray-900';
+  const textSecondaryClass = darkMode ? 'text-gray-400' : 'text-gray-500';
+  const borderClass = darkMode ? 'border-gray-700' : 'border-gray-200';
+  const inputBgClass = darkMode ? 'bg-gray-700 text-gray-100' : 'bg-white text-gray-900';
+  const inputBorderClass = darkMode ? 'border-gray-600' : 'border-gray-300';
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className={`${bgClass} rounded-lg max-w-3xl w-full max-h-[90vh] overflow-y-auto`}>
+        <div className={`sticky top-0 ${bgClass} border-b ${borderClass} px-6 py-4`}>
+          <div className="flex items-center gap-3">
+            <Calendar className="text-blue-600" size={24} />
+            <div>
+              <h2 className={`text-xl font-bold ${textClass}`}>
+                {session ? 'Edit Training Session' : 'Add New Training Session'}
+              </h2>
+              <p className={`text-sm ${textSecondaryClass} mt-1`}>
+                {training?.clientName} - {training?.title}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-6">
+          <div className={`${darkMode ? 'bg-blue-900 border-blue-700' : 'bg-blue-50 border-blue-200'} border rounded-lg p-4`}>
+            <p className={`text-sm ${darkMode ? 'text-blue-100' : 'text-blue-900'}`}>
+              <strong>Purpose:</strong> Schedule a training delivery session with all key details including dates, times, instructor, and logistics.
+            </p>
+          </div>
+
+          {/* Event Title */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Event / Course Title *
+            </label>
+            <input
+              type="text"
+              value={formData.eventTitle}
+              onChange={(e) => setFormData(prev => ({ ...prev, eventTitle: e.target.value }))}
+              required
+              placeholder="e.g., AI Fundamentals Training - Day 1"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          {/* Date and Time */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Start Date *
+              </label>
+              <input
+                type="date"
+                value={formData.startDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, startDate: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Start Time *
+              </label>
+              <input
+                type="time"
+                value={formData.startTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, startTime: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                End Date *
+              </label>
+              <input
+                type="date"
+                value={formData.endDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, endDate: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                End Time *
+              </label>
+              <input
+                type="time"
+                value={formData.endTime}
+                onChange={(e) => setFormData(prev => ({ ...prev, endTime: e.target.value }))}
+                required
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          </div>
+
+          {/* Delivery Mode */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Delivery Mode *
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {['Virtual', 'On-site', 'Hybrid'].map(mode => (
+                <button
+                  key={mode}
+                  onClick={() => setFormData(prev => ({ ...prev, deliveryMode: mode }))}
+                  className={`p-3 rounded-lg border-2 transition ${
+                    formData.deliveryMode === mode
+                      ? mode === 'Virtual' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900' :
+                        mode === 'On-site' ? 'border-green-600 bg-green-50 dark:bg-green-900' :
+                        'border-purple-600 bg-purple-50 dark:bg-purple-900'
+                      : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                  }`}
+                >
+                  <div className={`font-medium ${textClass} text-sm`}>{mode}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Location (for On-site and Hybrid) */}
+          {(formData.deliveryMode === 'On-site' || formData.deliveryMode === 'Hybrid') && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Location *
+              </label>
+              <input
+                type="text"
+                value={formData.location}
+                onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
+                required
+                placeholder="e.g., TechCorp HQ, Conference Room A"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          )}
+
+          {/* Virtual Link (for Virtual and Hybrid) */}
+          {(formData.deliveryMode === 'Virtual' || formData.deliveryMode === 'Hybrid') && (
+            <div>
+              <label className={`block text-sm font-medium ${textClass} mb-1`}>
+                Virtual Meeting Link *
+              </label>
+              <input
+                type="url"
+                value={formData.virtualLink}
+                onChange={(e) => setFormData(prev => ({ ...prev, virtualLink: e.target.value }))}
+                required
+                placeholder="https://zoom.us/j/123456789"
+                className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+              />
+            </div>
+          )}
+
+          {/* Instructor */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Instructor *
+            </label>
+            <input
+              type="text"
+              value={formData.instructor}
+              onChange={(e) => setFormData(prev => ({ ...prev, instructor: e.target.value }))}
+              required
+              placeholder="Primary instructor name"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+
+          {/* Facilitators */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Facilitators (Optional)
+            </label>
+            <input
+              type="text"
+              value={formData.facilitators}
+              onChange={(e) => setFormData(prev => ({ ...prev, facilitators: e.target.value }))}
+              placeholder="Comma-separated names (e.g., Lisa Thompson, John Davis)"
+              className={`w-full px-3 py-2 border ${inputBorderClass} ${inputBgClass} rounded-lg focus:ring-2 focus:ring-blue-500`}
+            />
+            <p className={`text-xs ${textSecondaryClass} mt-1`}>
+              Enter multiple facilitators separated by commas
+            </p>
+          </div>
+
+          {/* Status */}
+          <div>
+            <label className={`block text-sm font-medium ${textClass} mb-1`}>
+              Status *
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {['Tentative', 'Confirmed', 'Completed'].map(status => (
+                <button
+                  key={status}
+                  onClick={() => setFormData(prev => ({ ...prev, status }))}
+                  className={`p-3 rounded-lg border-2 transition ${
+                    formData.status === status
+                      ? status === 'Confirmed' ? 'border-green-600 bg-green-50 dark:bg-green-900' :
+                        status === 'Tentative' ? 'border-yellow-600 bg-yellow-50 dark:bg-yellow-900' :
+                        'border-gray-600 bg-gray-50 dark:bg-gray-700'
+                      : `border-${darkMode ? 'gray-600' : 'gray-300'}`
+                  }`}
+                >
+                  <div className={`font-medium ${textClass} text-sm`}>{status}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className={`flex gap-3 pt-4 border-t ${borderClass}`}>
+            <button
+              onClick={onClose}
+              className={`flex-1 px-4 py-2 border ${inputBorderClass} ${textClass} rounded-lg ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition`}
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                if (!formData.eventTitle || !formData.startDate || !formData.startTime ||
+                    !formData.endDate || !formData.endTime || !formData.instructor) {
+                  alert('Please fill in all required fields');
+                  return;
+                }
+                if ((formData.deliveryMode === 'On-site' || formData.deliveryMode === 'Hybrid') && !formData.location) {
+                  alert('Please provide a location for on-site or hybrid delivery');
+                  return;
+                }
+                if ((formData.deliveryMode === 'Virtual' || formData.deliveryMode === 'Hybrid') && !formData.virtualLink) {
+                  alert('Please provide a virtual meeting link');
+                  return;
+                }
+
+                const sessionData = {
+                  ...formData,
+                  facilitators: formData.facilitators.split(',').map(f => f.trim()).filter(f => f)
+                };
+
+                onSubmit(sessionData);
+              }}
+              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+            >
+              {session ? 'Update Session' : 'Add Session'}
             </button>
           </div>
         </div>
