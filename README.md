@@ -21,15 +21,21 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 1: Client Intake Form
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a trainer I want to create a record of a client's request so that I can track, share, and monitor the progress of training development, delivery and invoicing.
-> 
+>
 > **Acceptance criteria:**
 > Given: There is no client and/or engagement information in the system
 > When: I create a new request
 > Then I am prompted to enter the name of the client, the point of contact, their contact information, the initial topic requests, number of attendees, mode (virtual, in-person, or blended), and a date for the initial scoping call"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - Required fields for client name, contact information
 - Contact name, email, and phone number fields
 - Initial topic requests textarea
@@ -38,8 +44,10 @@ This application was developed iteratively through conversation with Claude AI, 
 - Initial scoping call date picker
 - Form validation with required field indicators
 
+</details>
+
 <details>
-<summary>📸 View Client Intake Form Screenshot</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ![Client Intake Form](./screenshots/client-intake-form.png)
 *Add screenshot of the New Client Request modal*
@@ -49,16 +57,19 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 2: Scoping Call Recording
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a training manager I want to record results from a scoping call so that course writers and trainers can see and refer back to sponsors requests.
-> 
+>
 > **Given:**
 > - There is an existing training request in the system.
 > - I have conducted or am conducting a scoping call with the client.
-> 
+>
 > **When:**
 > - I select "Record Scoping Call" from the training request dashboard or details page.
-> 
+>
 > **Then:**
 > I am presented with a fillable scoping call form that includes the following fields:
 > - Attendee Roles: (e.g., Executives, Managers, Analysts, etc.)
@@ -70,15 +81,20 @@ This application was developed iteratively through conversation with Claude AI, 
 > - Special Requirements / Constraints: (optional)
 > - Notes / Additional Context: (free text)"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - "Record Scoping Call" button with FileText icon in actions column
 - Comprehensive scoping call form with all required fields
 - Scoping status indicator (Completed/Not recorded)
 - Scoping call results displayed in training details view
 - Purpose statement to guide form completion
 
+</details>
+
 <details>
-<summary>📸 View Scoping Call Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Scoping Call Form
 ![Scoping Call Form](./screenshots/scoping-call-form.png)
@@ -93,18 +109,26 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 3: Theme Toggle
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "Could you create an option to switch between light and dark themes?"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - Theme toggle button in header (Sun/Moon icons)
 - Complete dark mode styling for all components
 - Persistent theme preference saved to storage
 - Smooth color transitions between themes
 - Accessible color contrast in both modes
 
+</details>
+
 <details>
-<summary>📸 View Theme Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Dark Mode
 ![Dark Mode](./screenshots/dark-mode-full.png)
@@ -115,19 +139,22 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 4: Coordination Call Recording
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a training manager, I want to log coordination calls so I can capture additional client instructions, updates, or changes to the training plan.
-> 
+>
 > **Acceptance Criteria:**
-> 
+>
 > **Given:**
 > - There is a training request in the system.
 > - A scoping call has been completed for this request.
 > - I have had or am about to have a follow-up coordination call with the client.
-> 
+>
 > **When:**
 > - I click the "Record Coordination Call" action on a training request with a completed scoping call.
-> 
+>
 > **Then:**
 > I am presented with a Coordination Call form with the following fields:
 > - **Call Date** (Date picker) *
@@ -140,7 +167,7 @@ This application was developed iteratively through conversation with Claude AI, 
 > - **Changes to Delivery Mode, Dates, or Duration** (Free-text, multi-line, optional)
 > - **Follow-Up Actions and Responsible Parties** (Free-text, multi-line) * (Example: "• Update participant list - Sarah - 3/15/2025")
 > - **Notes / Client Instructions** (Free-text, optional)
-> 
+>
 > **And:**
 > - The coordination call is saved and associated with the training request.
 > - Multiple coordination calls can be logged per request.
@@ -148,7 +175,10 @@ This application was developed iteratively through conversation with Claude AI, 
 > - In the detailed view of a training request, I can see all coordination calls in chronological order.
 > - The coordination call action is only enabled after a scoping call is completed."
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - "Record Coordination Call" button with MessageSquare icon in actions column
 - Button is disabled until scoping call is completed (with tooltip)
 - Comprehensive coordination call form with all required fields
@@ -161,8 +191,10 @@ This application was developed iteratively through conversation with Claude AI, 
 - Color-coded display (blue theme) to distinguish from scoping calls
 - Purpose statement banner explaining the feature
 
+</details>
+
 <details>
-<summary>📸 View Coordination Call Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Coordination Call Form
 ![Coordination Call Form](./screenshots/coordination-call-form.png)
@@ -181,18 +213,21 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 5: Email Communication Logging
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a training manager, I want to log email communications so that I can maintain a complete history of all project-related correspondence for context, accountability, and transparency.
-> 
+>
 > **Acceptance Criteria:**
-> 
+>
 > **Given:**
 > - There is a training request in the system.
 > - I have sent or received an email related to this training.
-> 
+>
 > **When:**
 > - I click "Add Email Communication" from the training request actions.
-> 
+>
 > **Then:**
 > I am presented with an Email Communication form with the following fields:
 > - **Sender Name** (Text field) *
@@ -202,7 +237,7 @@ This application was developed iteratively through conversation with Claude AI, 
 > - **Email Body** (Large text area, multi-line) *
 > - **Attachments** (Text field for listing attachment filenames, comma-separated, optional)
 > - **Timestamp** (Auto-populated with current date/time)
-> 
+>
 > **And:**
 > - The email communication is saved and associated with the training request.
 > - Multiple emails can be logged per request.
@@ -210,7 +245,10 @@ This application was developed iteratively through conversation with Claude AI, 
 > - In the detailed view, I can see all emails in chronological order.
 > - Email bodies preserve basic formatting (line breaks)."
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - "Add Email Communication" button with Inbox icon in actions column
 - Comprehensive email logging form with all required fields
 - Sender information fields (name and email)
@@ -227,8 +265,10 @@ This application was developed iteratively through conversation with Claude AI, 
 - Purpose statement banner explaining the feature
 - Expandable email body view with proper formatting
 
+</details>
+
 <details>
-<summary>📸 View Email Communication Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Email Communication Form
 ![Email Communication Form](./screenshots/email-communication-form.png)
@@ -247,37 +287,40 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 6: Proposal Document Management
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a training manager, I want to upload or link to proposal documents so that all stakeholders can access the most recent proposal and see the version history.
-> 
+>
 > **Acceptance Criteria:**
-> 
+>
 > **Given:**
 > - There is a training request in the system.
 > - I have a proposal document ready to share (either as a file or as a link).
-> 
+>
 > **When:**
 > - I navigate to the "Documents" tab or click "Add Proposal" from the training request actions.
-> 
+>
 > **Then:**
 > I am presented with a Proposal Document form with the following options and fields:
-> 
+>
 > **Upload Method Selection:**
 > - Option 1: **Paste Link** (for SharePoint, Google Drive, Dropbox, Box, etc.)
 > - Option 2: **Upload File** (PDF, DOCX, PPTX - max 10MB)
-> 
+>
 > **If Paste Link is selected:**
 > - **Document Link** (URL field, validated for common cloud storage domains) *
-> 
+>
 > **If Upload File is selected:**
 > - **File Upload** (File picker with drag-and-drop support) *
 > - Accepted formats: .pdf, .docx, .pptx
 > - Note displayed: "In this demo, file content is not actually uploaded. Only the filename is stored."
-> 
+>
 > **Common Fields:**
 > - **Version Label** (Text field, e.g., "v1.0", "Draft", "Final", "2025-01-15") *
 > - **Notes** (Text area, optional, for additional context about this version)
-> 
+>
 > **And:**
 > - When I save the proposal:
 >   - The document is marked as the **current version**
@@ -292,7 +335,10 @@ This application was developed iteratively through conversation with Claude AI, 
 > - Multiple versions can exist, but only one is marked "Current" at a time
 > - Visual indicator shows which trainings have proposals uploaded"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - **New "Documents" Tab** in main navigation
 - **"Add Proposal" button** with Upload icon
 - **Dual Upload Method Selection:**
@@ -326,8 +372,10 @@ This application was developed iteratively through conversation with Claude AI, 
   - Color-coded proposal cards (green theme)
   - Icon differentiation (File icon vs External Link icon)
 
+</details>
+
 <details>
-<summary>📸 View Proposal Document Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Proposal Upload Modal - Link Option
 ![Proposal Link Upload](./screenshots/proposal-link-upload.png)
@@ -350,24 +398,30 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 7: Run of Show / Agenda Management
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a Training Manager, I want to upload or link the current version of the Run of Show or Agenda, so that trainers and stakeholders can see what will happen during the delivery.
-> 
+>
 > **Acceptance Criteria:**
-> 
+>
 > **Given:**
 > - A training request exists in the system.
-> 
+>
 > **When:**
 > - I choose "Add Run of Show" under the engagement's document section.
-> 
+>
 > **Then:**
 > - I can upload or link an Excel/Word/PDF file
 > - I can add a note describing key updates
 > - The document is marked as the current version
 > - Trainers and stakeholders can access the current agenda"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - **"Add Run of Show" button** in Documents tab with ClipboardList icon
 - **Dual Upload Method Selection:**
   - Paste Link option with URL validation for cloud storage (SharePoint, Google Drive, Dropbox, Box)
@@ -401,8 +455,10 @@ This application was developed iteratively through conversation with Claude AI, 
   - Color-coded run of show cards (blue theme)
   - ClipboardList icon differentiation from proposals
 
+</details>
+
 <details>
-<summary>📸 View Run of Show Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Run of Show Upload Modal - Link Option
 ![Run of Show Link Upload](./screenshots/runofshow-link-upload.png)
@@ -425,7 +481,10 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 8: SOW / Contract Document Management with Status Tracking
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a Training Manager or Administrator,
 > I want to upload or link the Statement of Work (SOW) or Contract and mark its current status,
 > so that the team can track whether the agreement has been sent, is awaiting signature, or has been fully executed.
@@ -445,7 +504,11 @@ This application was developed iteratively through conversation with Claude AI, 
 >   - 🟢 Signed / Executed.
 > - The SOW/Contract record displays in the engagement's document list with the selected status."
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
+
 - **"Add SOW / Contract" button** in Documents tab and pipeline table with FileCheck icon
 - **Dual Upload Method Selection:**
   - Paste Link option with URL validation for cloud storage (SharePoint, Google Drive, Dropbox, Box)
@@ -490,8 +553,10 @@ This application was developed iteratively through conversation with Claude AI, 
   - FileCheck icon differentiation from proposals and run of show
   - Dual status badges (Current + Signature Status)
 
+</details>
+
 <details>
-<summary>📸 View SOW / Contract Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### SOW Upload Modal - Status Selection
 ![SOW Status Selection](./screenshots/sow-status-selection.png)
@@ -522,7 +587,10 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 9: View All Current Design Documents in Engagement Dashboard
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a Trainer or Training Manager,
 > I want to view the most current versions of the proposal, run of show, and SOW/contract in one place,
 > so that I can quickly reference the client's approved design and expectations.
@@ -543,7 +611,11 @@ This application was developed iteratively through conversation with Claude AI, 
 >   - Link to open/download
 >   - "Current Version" indicator"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
+
 - **Current Design Documents Overview Section** - Positioned at the top of the Documents tab
 - **Consolidated Table View** displaying all current documents across all engagements:
   - Client Name and Training Title
@@ -579,8 +651,10 @@ This application was developed iteratively through conversation with Claude AI, 
   - Quickly identify which clients have which documents ready
   - Track most recently updated documents
 
+</details>
+
 <details>
-<summary>📸 View Current Design Documents Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Current Design Documents Dashboard
 ![Current Documents Dashboard](./screenshots/current-documents-dashboard.png)
@@ -603,7 +677,10 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 10: Proposal-to-Contract Conversion Tracking Analytics
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As an Administrator or Business Lead,
 > I want to track how many proposals result in signed contracts,
 > so that I can measure conversion performance and forecast revenue potential.
@@ -622,7 +699,11 @@ This application was developed iteratively through conversation with Claude AI, 
 >   - Number of contracts signed
 >   - Conversion rate (%)"
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
+
 - **Proposal to Contract Conversion Section** - New dedicated section in Analytics tab
 - **Three New Analytics Cards:**
   - **Proposals Sent** - Count of engagements that have at least one proposal document
@@ -656,8 +737,10 @@ This application was developed iteratively through conversation with Claude AI, 
   - Dark mode support
   - Responsive design
 
+</details>
+
 <details>
-<summary>📸 View Conversion Analytics Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### Conversion Analytics Cards
 ![Conversion Analytics](./screenshots/conversion-analytics-cards.png)
@@ -684,7 +767,10 @@ This application was developed iteratively through conversation with Claude AI, 
 ---
 
 ### User Story 11: Master Schedule with List and Calendar Views
-**Prompt:**
+
+<details>
+<summary><b>📋 View User Story Prompt</b></summary>
+
 > "As a Training Manager or Administrator,
 > I want to view all scheduled training sessions in a list and calendar format,
 > so that I can see what's coming up and easily access event details.
@@ -710,7 +796,10 @@ This application was developed iteratively through conversation with Claude AI, 
 > - I can toggle to a Calendar View that displays each event by date.
 > - In Calendar View, each entry shows Client Name and Event Title."
 
-**Features Added:**
+</details>
+
+<details>
+<summary><b>✨ View Features Added</b></summary>
 - **New Schedule Tab** - Added to main navigation between Documents and Analytics
 - **Scheduled Sessions Data Model:**
   - Event/Course Title
@@ -772,8 +861,10 @@ This application was developed iteratively through conversation with Claude AI, 
   - Confirmed status
   - Scheduled for March 2025
 
+</details>
+
 <details>
-<summary>📸 View Master Schedule Screenshots</summary>
+<summary><b>📸 View Screenshots</b></summary>
 
 ### List View - Master Schedule
 ![Schedule List View](./screenshots/schedule-list-view.png)
