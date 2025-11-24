@@ -54,6 +54,7 @@ const TrainingManagementApp = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [trainings, setTrainings] = useState([]);
   const [darkMode, setDarkMode] = useState(false);
+  const [scheduleView, setScheduleView] = useState('list'); // 'list' or 'calendar'
 
   useEffect(() => {
     loadData();
@@ -236,6 +237,36 @@ const TrainingManagementApp = () => {
           isCurrent: false,
           uploadedAt: '2025-02-10T11:00:00Z',
           uploadedBy: 'Mike Chen'
+        }
+      ],
+      scheduledSessions: [
+        {
+          id: 'SESS001',
+          eventTitle: 'AI Fundamentals Training - Day 1',
+          startDate: '2025-03-20',
+          startTime: '08:30',
+          endDate: '2025-03-20',
+          endTime: '16:30',
+          deliveryMode: 'Hybrid',
+          location: 'TechCorp HQ, Conference Room A',
+          virtualLink: 'https://zoom.us/j/123456789',
+          instructor: 'Mike Chen',
+          facilitators: ['Lisa Thompson', 'John Davis'],
+          status: 'Confirmed'
+        },
+        {
+          id: 'SESS002',
+          eventTitle: 'AI Fundamentals Training - Day 2',
+          startDate: '2025-03-21',
+          startTime: '08:30',
+          endDate: '2025-03-21',
+          endTime: '16:30',
+          deliveryMode: 'Hybrid',
+          location: 'TechCorp HQ, Conference Room A',
+          virtualLink: 'https://zoom.us/j/123456789',
+          instructor: 'Mike Chen',
+          facilitators: ['Lisa Thompson'],
+          status: 'Confirmed'
         }
       ],
       createdAt: '2025-01-20T10:30:00Z',
@@ -425,7 +456,7 @@ const TrainingManagementApp = () => {
           </div>
 
           <div className={`flex gap-4 mt-4 border-b ${borderClass}`}>
-            {['pipeline', 'documents', 'analytics'].map(tab => (
+            {['pipeline', 'documents', 'schedule', 'analytics'].map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -972,6 +1003,286 @@ const TrainingManagementApp = () => {
                 )}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'schedule' && (
+          <div className="space-y-6">
+            {/* Header with View Toggle */}
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className={`text-2xl font-bold ${textClass}`}>Master Schedule</h2>
+                <p className={`text-sm ${textSecondaryClass} mt-1`}>View all scheduled training sessions</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex rounded-lg border ${borderClass} p-1">
+                  <button
+                    onClick={() => setScheduleView('list')}
+                    className={`px-4 py-2 rounded transition ${
+                      scheduleView === 'list'
+                        ? 'bg-blue-600 text-white'
+                        : `${textSecondaryClass} hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`
+                    }`}
+                  >
+                    List View
+                  </button>
+                  <button
+                    onClick={() => setScheduleView('calendar')}
+                    className={`px-4 py-2 rounded transition ${
+                      scheduleView === 'calendar'
+                        ? 'bg-blue-600 text-white'
+                        : `${textSecondaryClass} hover:${darkMode ? 'bg-gray-700' : 'bg-gray-100'}`
+                    }`}
+                  >
+                    Calendar View
+                  </button>
+                </div>
+                <button
+                  onClick={() => openModal('schedule', trainings[0])}
+                  className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                >
+                  <Plus size={20} />
+                  Add Session
+                </button>
+              </div>
+            </div>
+
+            {/* List View */}
+            {scheduleView === 'list' && (
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} overflow-hidden`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className={`${darkMode ? 'bg-gray-700' : 'bg-gray-50'} border-b ${borderClass}`}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Event / Course Title</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Client Name</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Date & Time</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Delivery Mode</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Location / Link</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Instructor</th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium ${textSecondaryClass} uppercase`}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${borderClass}`}>
+                      {(() => {
+                        // Collect all scheduled sessions from all trainings
+                        const allSessions = [];
+                        trainings.forEach(training => {
+                          if (training.scheduledSessions?.length > 0) {
+                            training.scheduledSessions.forEach(session => {
+                              allSessions.push({
+                                ...session,
+                                clientName: training.clientName,
+                                training: training
+                              });
+                            });
+                          }
+                        });
+
+                        // Sort by date and time
+                        allSessions.sort((a, b) => {
+                          const dateA = new Date(`${a.startDate}T${a.startTime}`);
+                          const dateB = new Date(`${b.startDate}T${b.startTime}`);
+                          return dateA - dateB;
+                        });
+
+                        if (allSessions.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan="7" className={`px-6 py-12 text-center ${textSecondaryClass}`}>
+                                <Calendar size={48} className={`mx-auto ${textSecondaryClass} mb-4 opacity-50`} />
+                                <p>No scheduled sessions yet. Click "Add Session" to schedule training.</p>
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return allSessions.map((session, index) => (
+                          <tr key={index} className={hoverClass}>
+                            <td className="px-6 py-4">
+                              <div className={`font-medium ${textClass}`}>{session.eventTitle}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>{session.clientName}</div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>
+                                {new Date(session.startDate).toLocaleDateString()}
+                              </div>
+                              <div className={`text-xs ${textSecondaryClass}`}>
+                                {session.startTime} – {session.endTime}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                session.deliveryMode === 'Virtual' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                                session.deliveryMode === 'On-site' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                              }`}>
+                                {session.deliveryMode}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              {session.deliveryMode === 'Virtual' || session.deliveryMode === 'Hybrid' ? (
+                                <a
+                                  href={session.virtualLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700 text-sm"
+                                >
+                                  <ExternalLink size={14} />
+                                  Join Meeting
+                                </a>
+                              ) : (
+                                <div className={`text-sm ${textClass} flex items-center gap-1`}>
+                                  <MapPin size={14} />
+                                  {session.location}
+                                </div>
+                              )}
+                              {session.deliveryMode === 'Hybrid' && (
+                                <div className={`text-xs ${textSecondaryClass} mt-1`}>{session.location}</div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className={`text-sm ${textClass}`}>{session.instructor}</div>
+                              {session.facilitators?.length > 0 && (
+                                <div className={`text-xs ${textSecondaryClass}`}>
+                                  +{session.facilitators.length} facilitator{session.facilitators.length > 1 ? 's' : ''}
+                                </div>
+                              )}
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                session.status === 'Confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                session.status === 'Tentative' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                              }`}>
+                                {session.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ));
+                      })()}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Calendar View */}
+            {scheduleView === 'calendar' && (
+              <div className={`${cardBgClass} rounded-lg border ${borderClass} p-6`}>
+                {(() => {
+                  // Collect all sessions
+                  const allSessions = [];
+                  trainings.forEach(training => {
+                    if (training.scheduledSessions?.length > 0) {
+                      training.scheduledSessions.forEach(session => {
+                        allSessions.push({
+                          ...session,
+                          clientName: training.clientName
+                        });
+                      });
+                    }
+                  });
+
+                  if (allSessions.length === 0) {
+                    return (
+                      <div className="text-center py-12">
+                        <Calendar size={48} className={`mx-auto ${textSecondaryClass} mb-4 opacity-50`} />
+                        <p className={textSecondaryClass}>No scheduled sessions yet. Click "Add Session" to schedule training.</p>
+                      </div>
+                    );
+                  }
+
+                  // Group sessions by date
+                  const sessionsByDate = {};
+                  allSessions.forEach(session => {
+                    const date = session.startDate;
+                    if (!sessionsByDate[date]) {
+                      sessionsByDate[date] = [];
+                    }
+                    sessionsByDate[date].push(session);
+                  });
+
+                  // Sort dates
+                  const sortedDates = Object.keys(sessionsByDate).sort();
+
+                  return (
+                    <div className="space-y-6">
+                      <h3 className={`text-lg font-semibold ${textClass} mb-4`}>Upcoming Sessions</h3>
+                      {sortedDates.map(date => (
+                        <div key={date} className={`border ${borderClass} rounded-lg p-4`}>
+                          <div className="flex items-center gap-3 mb-4">
+                            <Calendar className="text-blue-600" size={24} />
+                            <div>
+                              <div className={`font-semibold ${textClass}`}>
+                                {new Date(date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                              </div>
+                              <div className={`text-sm ${textSecondaryClass}`}>
+                                {sessionsByDate[date].length} session{sessionsByDate[date].length > 1 ? 's' : ''} scheduled
+                              </div>
+                            </div>
+                          </div>
+                          <div className="space-y-3">
+                            {sessionsByDate[date].map((session, idx) => (
+                              <div
+                                key={idx}
+                                className={`p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex-1">
+                                    <div className={`font-medium ${textClass} mb-1`}>
+                                      {session.clientName} – {session.eventTitle}
+                                    </div>
+                                    <div className="flex items-center gap-4 text-sm">
+                                      <div className="flex items-center gap-1">
+                                        <Clock size={14} className={textSecondaryClass} />
+                                        <span className={textSecondaryClass}>
+                                          {session.startTime} – {session.endTime}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-1">
+                                        <Users size={14} className={textSecondaryClass} />
+                                        <span className={textSecondaryClass}>{session.instructor}</span>
+                                      </div>
+                                      {(session.deliveryMode === 'Virtual' || session.deliveryMode === 'Hybrid') && (
+                                        <a
+                                          href={session.virtualLink}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-700"
+                                        >
+                                          <Video size={14} />
+                                          Join
+                                        </a>
+                                      )}
+                                      {(session.deliveryMode === 'On-site' || session.deliveryMode === 'Hybrid') && (
+                                        <div className="flex items-center gap-1">
+                                          <MapPin size={14} className={textSecondaryClass} />
+                                          <span className={textSecondaryClass}>{session.location}</span>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                                    session.status === 'Confirmed' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                                    session.status === 'Tentative' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                                  }`}>
+                                    {session.status}
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
           </div>
         )}
 
