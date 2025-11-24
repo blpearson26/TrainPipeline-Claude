@@ -683,6 +683,130 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ---
 
+### User Story 11: Master Schedule with List and Calendar Views
+**Prompt:**
+> "As a Training Manager or Administrator,
+> I want to view all scheduled training sessions in a list and calendar format,
+> so that I can see what's coming up and easily access event details.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - One or more training events have been scheduled.
+>
+> **When:**
+> - I open the "Plan & Schedule Delivery" section.
+>
+> **Then:**
+> - I see a Master Schedule List View showing:
+>   - Event / Course Title
+>   - Client Name
+>   - Date & Time (Start–End)
+>   - Delivery Mode (Virtual, On-site, Hybrid)
+>   - Location or Virtual Link
+>   - Instructor
+>   - Facilitators (if any)
+>   - Status (Tentative / Confirmed / Completed)
+> - I can toggle to a Calendar View that displays each event by date.
+> - In Calendar View, each entry shows Client Name and Event Title."
+
+**Features Added:**
+- **New Schedule Tab** - Added to main navigation between Documents and Analytics
+- **Scheduled Sessions Data Model:**
+  - Event/Course Title
+  - Start Date & Time, End Date & Time
+  - Delivery Mode (Virtual, On-site, Hybrid)
+  - Location and Virtual Link fields
+  - Instructor name
+  - Facilitators array (multiple team members)
+  - Status (Tentative / Confirmed / Completed)
+- **View Toggle Control:**
+  - Switch between List View and Calendar View
+  - Clean button-based toggle interface
+  - Persistent view state during session
+  - Color-coded active view indicator
+- **List View Features:**
+  - **Comprehensive Table Display** with all session details
+  - **Chronological Sorting** - Sessions ordered by date and time (earliest first)
+  - **Client Name Column** - Quickly identify which client each session is for
+  - **Date & Time Display** - Full date with start–end time range
+  - **Delivery Mode Badges:**
+    - Blue badge for Virtual sessions
+    - Green badge for On-site sessions
+    - Purple badge for Hybrid sessions
+  - **Smart Location/Link Display:**
+    - Virtual sessions: Clickable "Join Meeting" link with ExternalLink icon
+    - On-site sessions: Location with MapPin icon
+    - Hybrid sessions: Both virtual link and physical location
+  - **Instructor & Facilitators:**
+    - Primary instructor name displayed
+    - Facilitator count badge (e.g., "+2 facilitators")
+  - **Status Badges:**
+    - Green for Confirmed sessions
+    - Yellow for Tentative sessions
+    - Gray for Completed sessions
+  - **Empty State** - Helpful message when no sessions are scheduled
+- **Calendar View Features:**
+  - **Date-Based Grouping** - Sessions organized by date
+  - **Full Date Display** - Weekday, month, day, year (e.g., "Thursday, March 20, 2025")
+  - **Session Count** - Shows how many sessions on each date
+  - **Compact Session Cards:**
+    - Client Name and Event Title prominently displayed
+    - Time range with Clock icon
+    - Instructor with Users icon
+    - Virtual meeting link with Video icon ("Join" button)
+    - Physical location with MapPin icon (for on-site/hybrid)
+    - Status badge (Confirmed/Tentative/Completed)
+  - **Upcoming Sessions Header** - Clear section title
+  - **Empty State** - Helpful message when no sessions are scheduled
+- **Visual Design:**
+  - Consistent color scheme matching app theme
+  - Dark mode support throughout
+  - Responsive table and card layouts
+  - Hover effects for better interactivity
+  - Icon usage for visual clarity (Calendar, Clock, Users, MapPin, Video, ExternalLink)
+- **Test Data Included:**
+  - 2 sample sessions (Day 1 & Day 2 AI training)
+  - Demonstrates Hybrid delivery mode
+  - Shows multiple facilitators
+  - Confirmed status
+  - Scheduled for March 2025
+
+<details>
+<summary>📸 View Master Schedule Screenshots</summary>
+
+### List View - Master Schedule
+![Schedule List View](./screenshots/schedule-list-view.png)
+*Screenshot of the Master Schedule List View showing all session details in a comprehensive table format*
+
+### List View - Delivery Mode Badges
+![Delivery Mode Badges](./screenshots/schedule-delivery-modes.png)
+*Screenshot showing the color-coded delivery mode badges (Virtual, On-site, Hybrid)*
+
+### List View - Status Badges
+![Status Badges](./screenshots/schedule-status-badges.png)
+*Screenshot showing the status badges (Confirmed, Tentative, Completed)*
+
+### Calendar View - Date Grouping
+![Schedule Calendar View](./screenshots/schedule-calendar-view.png)
+*Screenshot of the Calendar View showing sessions grouped by date with full date display*
+
+### Calendar View - Session Cards
+![Session Cards Detail](./screenshots/schedule-session-cards.png)
+*Screenshot showing the compact session cards with time, instructor, location, and virtual link details*
+
+### View Toggle
+![View Toggle](./screenshots/schedule-view-toggle.png)
+*Screenshot showing the toggle between List View and Calendar View*
+
+### Empty State
+![Schedule Empty State](./screenshots/schedule-empty-state.png)
+*Screenshot showing the empty state when no sessions are scheduled*
+
+</details>
+
+---
+
 ## 🚀 Features
 
 ### Core Functionality
@@ -695,6 +819,7 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Run of Show / Agenda Management**: Version-controlled training agendas and delivery schedules
 - **SOW / Contract Management**: Version-controlled contract documents with signature status tracking (Pending/Signed)
 - **Current Design Documents Dashboard**: Consolidated view of all current design documents across engagements
+- **Master Schedule**: View all scheduled training sessions in List and Calendar formats with full event details
 - **Conversion Analytics**: Track proposal-to-contract conversion rates and business performance metrics
 - **Search & Filter**: Find trainings by client name, contact, or training title
 - **Stage-based Views**: Filter trainings by pipeline stage
@@ -706,7 +831,7 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Modal Forms**: Clean, organized forms for data entry
 - **Visual Indicators**: Color-coded stage badges and status icons
 - **Action Buttons**: Quick access to view, edit, record, and delete operations
-- **Tabbed Navigation**: Pipeline, Documents, and Analytics views
+- **Tabbed Navigation**: Pipeline, Documents, Schedule, and Analytics views
 
 ### Data Management
 - **Persistent Storage**: All data saved automatically using browser storage
@@ -1049,6 +1174,37 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
    - Measure business development performance
    - Forecast revenue potential
    - Identify sales process improvements
+
+### Viewing Master Schedule
+1. Navigate to "Schedule" tab
+2. Choose your preferred view:
+   - **List View** - Comprehensive table with all details
+   - **Calendar View** - Sessions grouped by date
+3. **List View features:**
+   - See all scheduled sessions in one table
+   - Sorted chronologically (earliest first)
+   - Columns: Event Title, Client, Date & Time, Delivery Mode, Location/Link, Instructor, Status
+   - Color-coded delivery mode badges (Blue=Virtual, Green=On-site, Purple=Hybrid)
+   - Color-coded status badges (Green=Confirmed, Yellow=Tentative, Gray=Completed)
+   - Click "Join Meeting" links for virtual sessions
+   - View facilitator count for each session
+4. **Calendar View features:**
+   - Sessions grouped by date
+   - Full date display with weekday
+   - Session count per date
+   - Compact cards showing:
+     - Client name and event title
+     - Time range with clock icon
+     - Instructor with users icon
+     - Virtual meeting "Join" link (if applicable)
+     - Physical location (if applicable)
+     - Status badge
+5. Use schedule to:
+   - See upcoming training sessions at a glance
+   - Access virtual meeting links quickly
+   - Check instructor assignments
+   - Review session locations and times
+   - Monitor session status (Tentative/Confirmed/Completed)
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
