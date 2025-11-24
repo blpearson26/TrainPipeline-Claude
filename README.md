@@ -168,14 +168,6 @@ This application was developed iteratively through conversation with Claude AI, 
 ![Coordination Call Form](./screenshots/coordination-call-form.png)
 *Add screenshot of the Record Coordination Call modal*
 
-### Coordination Call Indicator
-![Coordination Call Indicator](./screenshots/coordination-call-indicator.png)
-*Add screenshot showing the coordination call counter in the pipeline table*
-
-### Coordination Call History
-![Coordination Call History](./screenshots/coordination-call-history.png)
-*Add screenshot showing multiple coordination calls in the training details view*
-
 </details>
 
 ---
@@ -231,16 +223,8 @@ This application was developed iteratively through conversation with Claude AI, 
 <summary>📸 View Email Communication Screenshots</summary>
 
 ### Email Communication Form
-![Email Communication Form](./screenshots/email-communication-form.png)
-*Add screenshot of the Add Email Communication modal*
-
-### Email Indicator
-![Email Indicator](./screenshots/email-indicator.png)
-*Add screenshot showing the email counter in the pipeline table*
-
-### Email History Display
-![Email History](./screenshots/email-history-view.png)
-*Add screenshot showing multiple emails in the training details view*
+![Email Communication Form](./screenshots/email-form.png)
+*Screenshot of the Add Email Communication modal*
 
 </details>
 
@@ -330,20 +314,8 @@ This application was developed iteratively through conversation with Claude AI, 
 <summary>📸 View Proposal Document Screenshots</summary>
 
 ### Proposal Upload Modal - Link Option
-![Proposal Link Upload](./screenshots/proposal-link-upload.png)
-*Add screenshot of the proposal modal with link paste option selected*
-
-### Proposal Upload Modal - File Option
-![Proposal File Upload](./screenshots/proposal-file-upload.png)
-*Add screenshot of the proposal modal with file upload option selected*
-
-### Documents Tab View
-![Documents Tab](./screenshots/documents-tab-view.png)
-*Add screenshot of the Documents tab showing multiple proposals with version history*
-
-### Proposal Version History
-![Proposal Versions](./screenshots/proposal-versions.png)
-*Add screenshot showing multiple versions of a proposal with current version highlighted*
+![Proposal Link Upload](./screenshots/proposal-document-form.png)
+*Screenshot of the proposal from*
 
 </details>
 
@@ -406,19 +378,218 @@ This application was developed iteratively through conversation with Claude AI, 
 
 ### Run of Show Upload Modal - Link Option
 ![Run of Show Link Upload](./screenshots/runofshow-link-upload.png)
-*Add screenshot of the run of show modal with link paste option selected*
+*Screenshot of the run of show modal with link paste option selected*
 
-### Run of Show Upload Modal - File Option
-![Run of Show File Upload](./screenshots/runofshow-file-upload.png)
-*Add screenshot of the run of show modal with file upload option selected*
+</details>
 
-### Documents Tab - Run of Show Section
-![Run of Show Section](./screenshots/runofshow-section.png)
-*Add screenshot of the Documents tab showing the Run of Show section with multiple versions*
+---
 
-### Run of Show Version History
-![Run of Show Versions](./screenshots/runofshow-versions.png)
-*Add screenshot showing multiple versions of a run of show with current version highlighted*
+### User Story 8: SOW / Contract Document Management with Status Tracking
+**Prompt:**
+> "As a Training Manager or Administrator,
+> I want to upload or link the Statement of Work (SOW) or Contract and mark its current status,
+> so that the team can track whether the agreement has been sent, is awaiting signature, or has been fully executed.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - A training engagement exists, and the proposal phase is complete.
+>
+> **When:**
+> - I select "Add SOW / Contract" from the engagement record.
+>
+> **Then:**
+> - I can upload or link the document (Word, PDF, or SharePoint link).
+> - I am prompted to set the document Status as:
+>   - 🟡 Pending Client Signature, or
+>   - 🟢 Signed / Executed.
+> - The SOW/Contract record displays in the engagement's document list with the selected status."
+
+**Features Added:**
+- **"Add SOW / Contract" button** in Documents tab and pipeline table with FileCheck icon
+- **Dual Upload Method Selection:**
+  - Paste Link option with URL validation for cloud storage (SharePoint, Google Drive, Dropbox, Box)
+  - Upload File option with drag-and-drop interface (PDF, DOCX, DOC)
+- **Signature Status Tracking:**
+  - 🟡 **Pending Client Signature** - Document awaiting client execution
+  - 🟢 **Signed / Executed** - Fully executed contract
+  - Visual status badges with emoji indicators
+  - Status selection during upload with clear UI indicators
+- **Dedicated SOW/Contract Section** in Documents tab (separate from Proposals and Run of Show)
+- **Version Control System:**
+  - Version label field (required)
+  - Notes field for describing version details (optional)
+  - Automatic marking of current version (only one active at a time)
+  - Upload timestamp and user tracking
+  - All historical versions remain accessible with their status
+- **SOW/Contract Display:**
+  - Grouped by training engagement
+  - All versions shown in reverse chronological order
+  - Current version badge (amber)
+  - Status badges (green for signed, yellow for pending)
+  - File information (name, size, type for uploads)
+  - External link icon for cloud storage links
+  - Add new version button per training
+- **Action Button Integration:**
+  - FileCheck icon button in pipeline table actions column
+  - Quick access to add SOW/Contract from any training
+  - Color-coded amber theme for visual distinction
+- **File Upload Features:**
+  - File type validation (PDF, Word only - appropriate for contracts)
+  - File size limit (10MB)
+  - Visual file preview after selection
+  - Note: Demo only stores filename, not actual file content
+- **URL Validation:**
+  - Checks for valid URL format
+  - Validates against approved cloud storage domains
+  - Warning message for invalid URLs
+- **Visual Indicators:**
+  - Purpose statement banner explaining the feature
+  - Info banner explaining current version marking
+  - Color-coded SOW/Contract cards (amber theme)
+  - FileCheck icon differentiation from proposals and run of show
+  - Dual status badges (Current + Signature Status)
+
+<details>
+<summary>📸 View SOW / Contract Screenshots</summary>
+
+### Documents Tab - SOW/Contract Section
+![SOW Section](./screenshots/sow-section.png)
+*Screenshot of the Documents tab showing the SOW/Contract section with status badges*
+
+</details>
+
+---
+
+### User Story 9: View All Current Design Documents in Engagement Dashboard
+**Prompt:**
+> "As a Trainer or Training Manager,
+> I want to view the most current versions of the proposal, run of show, and SOW/contract in one place,
+> so that I can quickly reference the client's approved design and expectations.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - One or more design documents are stored.
+>
+> **When:**
+> - I open the "Design & Confirm Training Solution" or "Documents" tab of an engagement.
+>
+> **Then:**
+> - I see a list showing:
+>   - Document Type
+>   - Title / Filename
+>   - Last Updated Date
+>   - Link to open/download
+>   - "Current Version" indicator"
+
+**Features Added:**
+- **Current Design Documents Overview Section** - Positioned at the top of the Documents tab
+- **Consolidated Table View** displaying all current documents across all engagements:
+  - Client Name and Training Title
+  - Document Type with color-coded badges (Proposal, Run of Show, SOW/Contract)
+  - Title/Filename with version label
+  - Last Updated Date and Time
+  - Status indicators (Current Version + Signature Status for SOW)
+  - Action buttons (Open Link or View Details)
+- **Smart Document Collection System:**
+  - Automatically finds current version (isCurrent: true) from each document type
+  - Aggregates proposals, run of show, and SOW/contracts across all training engagements
+  - Sorts by most recently updated (newest first)
+  - Empty state when no documents exist
+- **Color-Coded Document Type Badges:**
+  - Green badge for Proposals with File icon
+  - Blue badge for Run of Show with ClipboardList icon
+  - Amber badge for SOW/Contract with FileCheck icon
+- **Status Indicators:**
+  - "Current Version" badge displayed for all documents
+  - "🟢 Signed" or "🟡 Pending" badges for SOW documents with signature status
+- **Quick Access Actions:**
+  - "Open Link" button for cloud storage documents (opens in new tab)
+  - "View Details" button for file uploads (opens training details modal)
+  - External link icon and Eye icon for visual clarity
+- **Responsive Table Design:**
+  - Clean, organized layout with all key information
+  - Hover effects for better interactivity
+  - Dark mode support
+  - Scrollable on smaller screens
+- **One-Stop Reference Dashboard:**
+  - No need to scroll through individual document sections
+  - See all approved design documents at a glance
+  - Quickly identify which clients have which documents ready
+  - Track most recently updated documents
+
+<details>
+<summary>📸 View Current Design Documents Screenshots</summary>
+
+### Current Design Documents Dashboard
+![Current Documents Dashboard](./screenshots/current-documents-dashboard.png)
+*Screenshot of the consolidated current design documents table showing proposals, run of show, and SOW documents across multiple engagements*
+
+</details>
+
+---
+
+### User Story 10: Proposal-to-Contract Conversion Tracking Analytics
+**Prompt:**
+> "As an Administrator or Business Lead,
+> I want to track how many proposals result in signed contracts,
+> so that I can measure conversion performance and forecast revenue potential.
+>
+> **Given / When / Then:**
+>
+> **Given:**
+> - Proposals and signed SOWs are stored across engagements.
+>
+> **When:**
+> - I view the analytics or dashboard screen.
+>
+> **Then:**
+> - I see:
+>   - Number of proposals sent
+>   - Number of contracts signed
+>   - Conversion rate (%)"
+
+**Features Added:**
+- **Proposal to Contract Conversion Section** - New dedicated section in Analytics tab
+- **Three New Analytics Cards:**
+  - **Proposals Sent** - Count of engagements that have at least one proposal document
+  - **Contracts Signed** - Count of engagements with fully executed SOWs (status = "Signed / Executed")
+  - **Conversion Rate** - Percentage showing proposal-to-contract success rate
+- **Smart Calculation Logic:**
+  - Proposals Sent: Counts trainings with `proposalDocuments.length > 0`
+  - Contracts Signed: Counts trainings where SOW has `status === 'Signed / Executed'`
+  - Conversion Rate: `(Contracts Signed / Proposals Sent) × 100`
+  - Handles edge cases (displays 0% when no proposals exist)
+  - Shows breakdown text (e.g., "2 of 3 proposals")
+- **Color-Coded Status Indicators:**
+  - **Green TrendingUp icon** (≥50%): Strong conversion performance
+  - **Yellow TrendingUp icon** (≥25%): Moderate conversion performance
+  - **Red TrendingUp icon** (<25%): Needs improvement
+  - Dynamic color coding helps identify performance at a glance
+- **Card Design:**
+  - Proposals Sent: File icon in green
+  - Contracts Signed: FileCheck icon in amber
+  - Conversion Rate: TrendingUp icon with dynamic color
+  - Descriptive subtext under each metric
+  - Consistent styling with existing analytics cards
+- **Business Value Metrics:**
+  - Track proposal success rates over time
+  - Measure sales/business development performance
+  - Forecast revenue potential based on conversion trends
+  - Identify opportunities for sales process improvement
+- **Visual Organization:**
+  - Separated from general metrics with clear heading
+  - Three-column grid layout matching existing analytics
+  - Dark mode support
+  - Responsive design
+
+<details>
+<summary>📸 View Conversion Analytics Screenshots</summary>
+
+### Analytics Tab - Full View
+![Analytics Full View](./screenshots/conversion-analytics.png)
+*Screenshot of the complete Analytics tab showing both general metrics and conversion tracking*
 
 </details>
 
@@ -434,9 +605,12 @@ This application was developed iteratively through conversation with Claude AI, 
 - **Email Communication Logging**: Maintain complete email correspondence history
 - **Proposal Document Management**: Version-controlled proposal documents with cloud storage integration
 - **Run of Show / Agenda Management**: Version-controlled training agendas and delivery schedules
+- **SOW / Contract Management**: Version-controlled contract documents with signature status tracking (Pending/Signed)
+- **Current Design Documents Dashboard**: Consolidated view of all current design documents across engagements
+- **Conversion Analytics**: Track proposal-to-contract conversion rates and business performance metrics
 - **Search & Filter**: Find trainings by client name, contact, or training title
 - **Stage-based Views**: Filter trainings by pipeline stage
-- **Analytics Dashboard**: View total pipeline value, active requests, and completed trainings
+- **Analytics Dashboard**: View total pipeline value, active requests, completed trainings, and conversion metrics
 
 ### User Interface
 - **Light/Dark Mode**: Toggle between themes with persistent preference
@@ -621,7 +795,33 @@ training-management-app/
       uploadedBy: "Current User"
     }
   ],
-  
+
+  // SOW / Contract Documents (Multiple Versions with Status)
+  sowDocuments: [
+    {
+      id: "SOW001",
+      fileName: "TechCorp_AI_Training_SOW.pdf",
+      linkUrl: null,
+      versionLabel: "Final SOW",
+      status: "Signed / Executed", // or "Pending Client Signature"
+      notes: "Signed by Sarah Johnson on 2/18/2025",
+      isCurrent: true,
+      uploadedAt: "2025-02-18T15:30:00Z",
+      uploadedBy: "Current User"
+    },
+    {
+      id: "SOW002",
+      fileName: null,
+      linkUrl: "https://sharepoint.com/contracts/techcorp-ai-sow-draft",
+      versionLabel: "Draft v1",
+      status: "Pending Client Signature",
+      notes: "Initial draft sent for review",
+      isCurrent: false,
+      uploadedAt: "2025-02-10T11:00:00Z",
+      uploadedBy: "Current User"
+    }
+  ],
+
   createdAt: "2025-01-15T10:30:00Z",
   updatedAt: "2025-02-20T14:45:00Z"
 }
@@ -710,6 +910,57 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
 8. Add optional notes describing key updates
 9. Click "Add Run of Show"
 10. Document is automatically marked as current version
+
+### Adding SOW / Contract Documents
+1. Navigate to "Documents" tab or click FileCheck icon in pipeline table
+2. Scroll to "Statement of Work / Contract" section (if on Documents tab)
+3. Click "Add SOW / Contract" button
+4. Choose upload method: Link or File
+5. **If using Link:**
+   - Paste cloud storage URL (SharePoint, Google Drive, etc.)
+6. **If using File:**
+   - Select PDF or Word (DOCX/DOC) file (max 10MB)
+   - Note: Demo only stores filename
+7. Enter version label (e.g., "Final SOW", "Draft v2.0", "Revised Contract")
+8. **Select Document Status:**
+   - Click 🟡 **Pending Client Signature** if awaiting client execution
+   - Click 🟢 **Signed / Executed** if contract is fully signed
+9. Add optional notes (e.g., "Signed by client on 2/18/2025", "Updated pricing terms")
+10. Click "Add SOW / Contract"
+11. Document is automatically marked as current version
+12. Status badge displays alongside version information
+
+### Viewing Current Design Documents Dashboard
+1. Navigate to "Documents" tab
+2. View the "Current Design Documents" section at the top
+3. See consolidated table showing all current documents:
+   - **Client/Training**: Client name and training title
+   - **Document Type**: Color-coded badges (Green=Proposal, Blue=Run of Show, Amber=SOW)
+   - **Title/Filename**: Document name and version label
+   - **Last Updated**: Date and time of last update
+   - **Status**: Current Version + Signature Status (for SOW documents)
+   - **Action**: Open Link or View Details button
+4. Documents are sorted by most recently updated (newest first)
+5. Click "Open Link" to access cloud storage documents in a new tab
+6. Click "View Details" to open the training engagement details
+
+### Viewing Conversion Analytics
+1. Navigate to "Analytics" tab
+2. View the "Proposal to Contract Conversion" section
+3. See three analytics cards:
+   - **Proposals Sent**: Number of engagements with proposals
+   - **Contracts Signed**: Number of fully executed SOWs
+   - **Conversion Rate**: Success rate percentage with color indicator
+4. Conversion rate color coding:
+   - **Green** (≥50%): Strong conversion performance
+   - **Yellow** (25-49%): Moderate conversion performance
+   - **Red** (<25%): Needs improvement
+5. View breakdown text showing ratio (e.g., "2 of 3 proposals")
+6. Use metrics to:
+   - Track proposal success rates
+   - Measure business development performance
+   - Forecast revenue potential
+   - Identify sales process improvements
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
