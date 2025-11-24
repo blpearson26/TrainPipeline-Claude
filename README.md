@@ -803,6 +803,18 @@ This application was developed iteratively through conversation with Claude AI, 
 ![Schedule Empty State](./screenshots/schedule-empty-state.png)
 *Screenshot showing the empty state when no sessions are scheduled*
 
+### Add Session Modal
+![Add Session Modal](./screenshots/schedule-add-session-modal.png)
+*Screenshot of the Add Session modal showing all form fields for creating a new training session*
+
+### Add Session Modal - Delivery Mode
+![Delivery Mode Selection](./screenshots/schedule-modal-delivery-mode.png)
+*Screenshot showing the delivery mode selector buttons (Virtual/On-site/Hybrid) with color-coding*
+
+### Add Session Modal - Status Selection
+![Status Selection](./screenshots/schedule-modal-status-selection.png)
+*Screenshot showing the status selector buttons (Tentative/Confirmed/Completed)*
+
 </details>
 
 ---
@@ -1205,6 +1217,29 @@ The application automatically deploys to GitHub Pages via GitHub Actions on ever
    - Check instructor assignments
    - Review session locations and times
    - Monitor session status (Tentative/Confirmed/Completed)
+
+### Adding/Editing Training Sessions
+1. Navigate to "Schedule" tab
+2. Click "Add Session" button in the header
+3. **Enter session details:**
+   - **Event / Course Title**: Name of the training session (e.g., "AI Fundamentals - Day 1")
+   - **Start Date & Time**: When the session begins
+   - **End Date & Time**: When the session ends
+   - **Delivery Mode**: Select Virtual, On-site, or Hybrid
+     - Blue button for Virtual
+     - Green button for On-site
+     - Purple button for Hybrid
+   - **Location**: Physical location (required for On-site and Hybrid)
+   - **Virtual Meeting Link**: Zoom/Teams link (required for Virtual and Hybrid)
+   - **Instructor**: Primary instructor name
+   - **Facilitators**: Comma-separated list of additional team members (optional)
+   - **Status**: Select Tentative, Confirmed, or Completed
+     - Yellow button for Tentative
+     - Green button for Confirmed
+     - Gray button for Completed
+4. Click "Add Session" to save
+5. Session appears in both List and Calendar views
+6. Sessions are automatically sorted chronologically
 
 ### Viewing Communication History
 1. Click the Eye icon on any training with communications
